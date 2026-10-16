@@ -58,13 +58,6 @@ export async function startServer() {
 export default async function handler(req, res) {
   try {
     const app = await getServerlessApp();
-
-    // Restore original requested path if rewritten by Vercel
-    const matchedPath = req.headers['x-matched-path'] || req.headers['x-forwarded-url'] || req.headers['x-forwarded-uri'];
-    if (matchedPath && (req.url === '/api' || req.url === '/api/' || req.url === '/api/index' || req.url === '/api/index.js')) {
-      req.url = matchedPath;
-    }
-
     app.server.emit('request', req, res);
   } catch (error) {
     console.error('Fatal Serverless Function Error:', error);
