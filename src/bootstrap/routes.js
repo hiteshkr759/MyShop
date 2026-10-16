@@ -10,8 +10,8 @@ import orderRoutes from '../features/orders/order.routes.js';
  * Registers all feature routes under the configured API prefix
  */
 export async function initRoutes(app) {
-  // Root landing endpoint
-  app.get('/', async (request, reply) => {
+  // Shared API landing responder
+  const landingHandler = async (request, reply) => {
     return reply.send({
       success: true,
       message: `Welcome to ${config.shopName} Fastify API`,
@@ -25,7 +25,13 @@ export async function initRoutes(app) {
       },
       version: '1.0.0'
     });
-  });
+  };
+
+  // Root and serverless fallback landing endpoints
+  app.get('/', landingHandler);
+  app.get('/api', landingHandler);
+  app.get('/api/index', landingHandler);
+  app.get('/api/index.js', landingHandler);
 
   // Feature modules registration under API prefix
   await app.register(async function apiRoutes(api) {
@@ -37,4 +43,3 @@ export async function initRoutes(app) {
 
   app.log.info('Feature routes registered under %s', config.apiPrefix);
 }
-
