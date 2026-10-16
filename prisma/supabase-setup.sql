@@ -55,3 +55,4 @@ CREATE POLICY IF NOT EXISTS "Allow service role full access to order items"
   TO service_role
   USING (true)
   WITH CHECK (true);
+

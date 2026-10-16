@@ -48,3 +48,4 @@ export function getSupabase() {
 export function getSupabaseAdmin() {
   return supabaseAdminClient;
 }
+
