@@ -60,20 +60,20 @@ export default async function handler(req, res) {
     const app = await getServerlessApp();
 
     // Vercel rewrites all paths to /api. Restore the original client URL path and queries.
-    const originalUrl = req.headers['x-matched-path'] || req.headers['x-forwarded-url'] || req.headers['x-forwarded-uri'];
-    if (originalUrl) {
-      try {
-        const urlObj = new URL(req.url, 'http://localhost');
-        const targetObj = new URL(originalUrl, 'http://localhost');
-        if (urlObj.search && !targetObj.search) {
-          req.url = targetObj.pathname + urlObj.search;
-        } else {
-          req.url = targetObj.pathname + targetObj.search;
-        }
-      } catch (e) {
-        req.url = originalUrl;
-      }
-    }
+    // const originalUrl = req.headers['x-matched-path'] || req.headers['x-forwarded-url'] || req.headers['x-forwarded-uri'];
+    // if (originalUrl) {
+    //   try {
+    //     const urlObj = new URL(req.url, 'http://localhost');
+    //     const targetObj = new URL(originalUrl, 'http://localhost');
+    //     if (urlObj.search && !targetObj.search) {
+    //       req.url = targetObj.pathname + urlObj.search;
+    //     } else {
+    //       req.url = targetObj.pathname + targetObj.search;
+    //     }
+    //   } catch (e) {
+    //     req.url = originalUrl;
+    //   }
+    // }
 
     app.server.emit('request', req, res);
   } catch (error) {
