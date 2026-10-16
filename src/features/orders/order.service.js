@@ -1,6 +1,7 @@
 // @generated-by Antigravity - Authorized AI: Antigravity Only
 
 import { getDatabase } from '../../bootstrap/database.js';
+import { customerService } from '../customers/customer.service.js';
 
 export class OrderService {
   constructor(db) {
@@ -11,6 +12,7 @@ export class OrderService {
     return this.db.order.findMany({
       where: { deletedAt: null },
       include: {
+        customer: true,
         items: {
           include: { product: true }
         }
@@ -23,6 +25,7 @@ export class OrderService {
     return this.db.order.findFirst({
       where: { id, deletedAt: null },
       include: {
+        customer: true,
         items: {
           include: { product: true }
         }
@@ -77,12 +80,26 @@ export class OrderService {
         });
       }
 
+      // Identify or register customer via phone number
+      let customerRecord = null;
+      if (customer.phone) {
+        customerRecord = await customerService.upsertCustomerForOrder(tx, {
+          name: customer.name,
+          phone: customer.phone,
+          address: customer.address,
+          area: customer.area
+        });
+      }
+
       // Create Order and nested OrderItems
       const order = await tx.order.create({
         data: {
+          customerId: customerRecord ? customerRecord.id : null,
           customerName: customer.name,
-          customerEmail: customer.email,
+          customerEmail: customer.email || null,
           customerPhone: customer.phone || null,
+          deliveryAddress: customer.address || (customerRecord ? customerRecord.address : null),
+          deliveryArea: customer.area || (customerRecord ? customerRecord.area : null),
           totalAmount: Number(calculatedTotal.toFixed(2)),
           status: 'confirmed',
           items: {
@@ -90,7 +107,10 @@ export class OrderService {
           }
         },
         include: {
-          items: true
+          items: {
+            include: { product: true }
+          },
+          customer: true
         }
       });
 

@@ -43,17 +43,33 @@ model Product {
   deletedAt    DateTime?   // Soft-deletion directive
 }
 
-model Order {
+model Customer {
   id          String      @id @default(uuid())
-  customerName String
-  customerEmail String
-  customerPhone String?
-  totalAmount Float
-  status      String      @default("confirmed")
-  items       OrderItem[]
+  name        String
+  phoneNumber String      @unique
+  address     String?
+  area        String?
+  orders      Order[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?   // Soft-deletion directive
+  deletedAt   DateTime?   // Soft-deletion directive (never hard delete)
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  customerId      String?
+  customer        Customer?   @relation(fields: [customerId], references: [id])
+  customerName    String
+  customerEmail   String?
+  customerPhone   String?
+  deliveryAddress String?
+  deliveryArea    String?
+  totalAmount     Float
+  status          String      @default("confirmed")
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft-deletion directive
 }
 
 model OrderItem {
