@@ -69,7 +69,8 @@ export default async function handler(req, res) {
         error: {
           message: 'Internal Server Error CHECK logs for details',
           code: 'SERVERLESS_FUNCTION_ERROR',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          //details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          details:  error.message
         }
       })
     );
