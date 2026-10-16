@@ -23,7 +23,13 @@
     "pm2:status": "pm2 status",
     "test": "node --test tests/**/*.test.js"
   },
-  "keywords": ["myshop", "ecommerce", "nodejs", "fastify", "api"],
+  "keywords": [
+    "myshop",
+    "ecommerce",
+    "nodejs",
+    "fastify",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -40,7 +46,10 @@
     "fastify-plugin": "^5.0.1"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^8.71.2",
+    "eslint": "^10.13.0",
     "nodemon": "^3.1.9",
-    "prisma": "^6.4.1"
+    "prisma": "^6.4.1",
+    "typescript": "^5.7.3"
   }
 }
