@@ -16,3 +16,4 @@ export default async function orderRoutes(fastify) {
   fastify.get('/:id', { schema: getOrderByIdSchema }, getOrderByIdHandler);
   fastify.post('/', { schema: createOrderSchema }, createOrderHandler);
 }
+

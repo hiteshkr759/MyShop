@@ -14,3 +14,4 @@ export async function getHealthHandler(request, reply) {
     }
   });
 }
+

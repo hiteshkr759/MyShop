@@ -36,3 +36,4 @@ export async function initRoutes(app) {
 
   app.log.info('Feature routes registered under %s', config.apiPrefix);
 }
+

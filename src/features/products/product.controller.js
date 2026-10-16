@@ -84,3 +84,4 @@ export async function archiveProductHandler(request, reply) {
     data: archived
   });
 }
+

@@ -59,3 +59,4 @@ model OrderItem {
   itemTotal   Float
   createdAt   DateTime @default(now())
 }
+

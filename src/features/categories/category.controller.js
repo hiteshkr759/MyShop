@@ -38,3 +38,4 @@ export async function createCategoryHandler(request, reply) {
     data: created
   });
 }
+

@@ -22,3 +22,4 @@ export default async function productRoutes(fastify) {
   fastify.put('/:id', { schema: updateProductSchema }, updateProductHandler);
   fastify.patch('/:id/archive', { schema: archiveProductSchema }, archiveProductHandler);
 }
+

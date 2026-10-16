@@ -30,3 +30,4 @@ export async function initPlugins(app) {
 
   app.log.info('Shared plugins and integration resources initialized.');
 }
+

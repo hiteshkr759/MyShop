@@ -16,3 +16,4 @@ export default async function categoryRoutes(fastify) {
   fastify.get('/:id', { schema: getCategoryByIdSchema }, getCategoryByIdHandler);
   fastify.post('/', { schema: createCategorySchema }, createCategoryHandler);
 }
+
