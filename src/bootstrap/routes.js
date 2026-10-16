@@ -14,7 +14,7 @@ export async function initRoutes(app) {
   const landingHandler = async (request, reply) => {
     return reply.send({
       success: true,
-      message: `Welcome to ${config.shopName} Fastify API`,
+      message: `Welcome to ${config.shopName} Fastify API CHECKED`,
       architecture: 'Feature-Wise Modular with Central Bootstrap',
       documentation: {
         swagger: '/docs',
