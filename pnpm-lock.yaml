@@ -50,6 +50,9 @@ importers:
       pm2:
         specifier: ^7.0.4
         version: 7.0.4(supports-color@5.5.0)
+      prisma:
+        specifier: ^6.4.1
+        version: 6.19.3(typescript@5.9.3)
     devDependencies:
       '@typescript-eslint/parser':
         specifier: ^8.71.2
@@ -60,9 +63,6 @@ importers:
       nodemon:
         specifier: ^3.1.9
         version: 3.1.14
-      prisma:
-        specifier: ^6.4.1
-        version: 6.19.3(typescript@5.9.3)
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

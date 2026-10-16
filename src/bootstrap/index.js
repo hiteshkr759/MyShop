@@ -35,8 +35,10 @@ export async function bootstrapApp(options = {}) {
   // 1. Initialize Plugins & Shared Resources (Database, Security, CORS)
   await initPlugins(app);
 
-  // 2. Seed initial catalog if DB is clean
-  await seedInitialData(app);
+  // 2. Seed initial catalog if DB is clean (skipped on Vercel serverless)
+  if (!process.env.VERCEL) {
+    await seedInitialData(app);
+  }
 
   // 3. Register Feature Routes
   await initRoutes(app);

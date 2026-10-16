@@ -2,36 +2,43 @@
 
 import { PrismaClient } from '@prisma/client';
 
-let prisma;
+const globalForPrisma = globalThis;
+
+function createPrismaClient() {
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ CRITICAL: DATABASE_URL is not defined in environment variables. Please configure DATABASE_URL in Vercel Project Settings.');
+  }
+
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error']
+  });
+}
 
 /**
  * Initializes and manages the shared Prisma database client
- * Enforces soft-deletions and graceful disconnection
+ * Enforces serverless global caching and graceful connection management
  */
 export function initDatabase(app) {
-  if (!prisma) {
-    prisma = new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error']
-    });
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
 
-    // Register cleanup on Fastify close
-    if (app) {
+    // Register cleanup on Fastify close (persistent servers only, omitted on Vercel serverless)
+    if (app && !process.env.VERCEL) {
       app.addHook('onClose', async () => {
         app.log.info('Closing Prisma database connection...');
-        await prisma.$disconnect();
+        await globalForPrisma.prisma.$disconnect();
       });
     }
   }
 
-  return prisma;
+  return globalForPrisma.prisma;
 }
 
 export function getDatabase() {
-  if (!prisma) {
-    prisma = new PrismaClient();
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
   }
-  return prisma;
+  return globalForPrisma.prisma;
 }
 
-export { prisma };
-
+export const prisma = globalForPrisma.prisma;
