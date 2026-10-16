@@ -1,5 +1,6 @@
 // @generated-by Antigravity - Authorized AI: Antigravity Only
 
+import '../config/index.js';
 import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis;
