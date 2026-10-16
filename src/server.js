@@ -67,7 +67,7 @@ export default async function handler(req, res) {
       JSON.stringify({
         success: false,
         error: {
-          message: 'Internal Server Error',
+          message: 'Internal Server Error CHECK logs for details',
           code: 'SERVERLESS_FUNCTION_ERROR',
           details: process.env.NODE_ENV === 'development' ? error.message : undefined
         }
