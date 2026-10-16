@@ -1,116 +1,141 @@
 // @generated-by Antigravity - Authorized AI: Antigravity Only
 import test, { describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import app from '../src/app.js';
+import { buildApp } from '../src/app.js';
 
-let server;
-let baseUrl;
+let app;
 
-describe('MyShop API Integration Tests', () => {
+describe('MyShop Fastify API Integration Tests', () => {
   before(async () => {
-    // Start server on a dynamic port for tests
-    await new Promise((resolve) => {
-      server = app.listen(0, () => {
-        const port = server.address().port;
-        baseUrl = `http://localhost:${port}`;
-        resolve();
-      });
-    });
+    app = await buildApp({ logger: false });
+    await app.ready();
   });
 
   after(async () => {
-    await new Promise((resolve) => server.close(resolve));
+    await app.close();
   });
 
-  test('GET / returns API welcome message and documentation links', async () => {
-    const res = await fetch(`${baseUrl}/`);
-    const data = await res.json();
+  test('GET / returns Fastify API welcome and documentation links', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/'
+    });
+    const data = JSON.parse(res.body);
 
-    assert.equal(res.status, 200);
+    assert.equal(res.statusCode, 200);
     assert.equal(data.success, true);
     assert.ok(data.documentation);
   });
 
   test('GET /api/v1/health returns UP status', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/health`);
-    const data = await res.json();
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/v1/health'
+    });
+    const data = JSON.parse(res.body);
 
-    assert.equal(res.status, 200);
+    assert.equal(res.statusCode, 200);
     assert.equal(data.success, true);
     assert.equal(data.data.status, 'UP');
   });
 
-  test('GET /api/v1/categories returns default categories', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/categories`);
-    const data = await res.json();
+  test('GET /api/v1/categories returns category list', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/v1/categories'
+    });
+    const data = JSON.parse(res.body);
 
-    assert.equal(res.status, 200);
+    assert.equal(res.statusCode, 200);
     assert.equal(data.success, true);
     assert.ok(Array.isArray(data.data));
     assert.ok(data.data.length > 0);
   });
 
-  test('GET /api/v1/products returns product list', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/products`);
-    const data = await res.json();
+  test('GET /api/v1/products returns product list from Prisma database', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/v1/products'
+    });
+    const data = JSON.parse(res.body);
 
-    assert.equal(res.status, 200);
+    assert.equal(res.statusCode, 200);
     assert.equal(data.success, true);
     assert.ok(Array.isArray(data.data));
     assert.ok(data.data.length > 0);
   });
 
-  test('POST /api/v1/products creates a new product', async () => {
+  test('POST /api/v1/products creates a new product in Prisma database', async () => {
+    // Fetch a category first
+    const catRes = await app.inject({ method: 'GET', url: '/api/v1/categories' });
+    const catData = JSON.parse(catRes.body);
+    const categoryId = catData.data[0].id;
+
     const newProduct = {
-      name: 'Wireless Gaming Mouse',
-      price: 49.99,
-      categoryId: 'cat-1',
-      stock: 15,
-      description: 'High DPI optical gaming mouse'
+      name: 'Wireless Ergonomic Vertical Mouse',
+      price: 59.99,
+      categoryId,
+      stock: 20,
+      description: 'Vertical mouse preventing wrist strain'
     };
 
-    const res = await fetch(`${baseUrl}/api/v1/products`, {
+    const res = await app.inject({
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newProduct)
+      url: '/api/v1/products',
+      payload: newProduct
     });
-    const data = await res.json();
+    const data = JSON.parse(res.body);
 
-    assert.equal(res.status, 201);
+    assert.equal(res.statusCode, 201);
     assert.equal(data.success, true);
-    assert.equal(data.data.name, 'Wireless Gaming Mouse');
-    assert.equal(data.data.price, 49.99);
+    assert.equal(data.data.name, 'Wireless Ergonomic Vertical Mouse');
+    assert.equal(data.data.price, 59.99);
   });
 
-  test('POST /api/v1/orders places an order and decreases stock', async () => {
+  test('POST /api/v1/orders places an order atomically and updates Prisma inventory', async () => {
+    // Get product to order
+    const prodRes = await app.inject({ method: 'GET', url: '/api/v1/products' });
+    const prodData = JSON.parse(prodRes.body);
+    const targetProduct = prodData.data[0];
+    const initialStock = targetProduct.stock;
+
     const orderPayload = {
       customer: {
-        name: 'Alice Smith',
-        email: 'alice@example.com'
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        phone: '123-456-7890'
       },
       items: [
-        { productId: 'prod-2', quantity: 2 }
+        { productId: targetProduct.id, quantity: 2 }
       ]
     };
 
-    const res = await fetch(`${baseUrl}/api/v1/orders`, {
+    const res = await app.inject({
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload)
+      url: '/api/v1/orders',
+      payload: orderPayload
     });
-    const data = await res.json();
+    const data = JSON.parse(res.body);
 
-    assert.equal(res.status, 201);
+    assert.equal(res.statusCode, 201);
     assert.equal(data.success, true);
-    assert.equal(data.data.customer.email, 'alice@example.com');
+    assert.equal(data.data.customerEmail, 'jane@example.com');
     assert.equal(data.data.items[0].quantity, 2);
+
+    // Verify stock deduction in database
+    const verifyProdRes = await app.inject({ method: 'GET', url: `/api/v1/products/${targetProduct.id}` });
+    const verifyProdData = JSON.parse(verifyProdRes.body);
+    assert.equal(verifyProdData.data.stock, initialStock - 2);
   });
 
   test('GET /unknown-route returns 404', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/does-not-exist`);
-    const data = await res.json();
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/v1/not-found-endpoint'
+    });
+    const data = JSON.parse(res.body);
 
-    assert.equal(res.status, 404);
+    assert.equal(res.statusCode, 404);
     assert.equal(data.success, false);
   });
 });

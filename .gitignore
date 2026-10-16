@@ -19,6 +19,11 @@ pids
 *.pid
 *.seed
 *.pid.lock
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+prisma/dev.db*
 
 # Coverage directory
 coverage/

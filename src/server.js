@@ -1,27 +1,35 @@
 // @generated-by Antigravity - Authorized AI: Antigravity Only
-import app from './app.js';
+
+import { buildApp } from './app.js';
 import { config } from './config/index.js';
 
-const server = app.listen(config.port, () => {
-  console.log(`===============================================`);
-  console.log(`🚀 ${config.shopName} Server is running`);
-  console.log(`📡 URL: http://localhost:${config.port}`);
-  console.log(`🏥 Health Check: http://localhost:${config.port}${config.apiPrefix}/health`);
-  console.log(`🛍️  Products: http://localhost:${config.port}${config.apiPrefix}/products`);
-  console.log(`⚙️  Environment: ${config.env}`);
-  console.log(`🛡️  AI Guardrails: Active (Zero-Deletion, Scope Restricted)`);
-  console.log(`===============================================`);
-});
+async function startServer() {
+  try {
+    const app = await buildApp();
 
-const handleShutdown = (signal) => {
-  console.log(`\nReceived ${signal}. Gracefully shutting down...`);
-  server.close(() => {
-    console.log('HTTP server closed. Exiting process.');
-    process.exit(0);
-  });
-};
+    await app.listen({
+      port: config.port,
+      host: '0.0.0.0'
+    });
 
-process.on('SIGINT', () => handleShutdown('SIGINT'));
-process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+    console.log(`===============================================`);
+    console.log(`🚀 ${config.shopName} Fastify Server is running`);
+    console.log(`📡 URL: http://localhost:${config.port}`);
+    console.log(`🏥 Health Check: http://localhost:${config.port}${config.apiPrefix}/health`);
+    console.log(`🛍️  Products: http://localhost:${config.port}${config.apiPrefix}/products`);
+    console.log(`📁 Architecture: Feature-Wise with Central Bootstrap`);
+    console.log(`🗄️  Database: Prisma ORM (SQLite / dev.db)`);
+    console.log(`⚙️  Environment: ${config.env}`);
+    console.log(`🛡️  AI Guardrails: Active (Zero-Deletion, Scope Restricted)`);
+    console.log(`===============================================`);
 
-export default server;
+    return app;
+  } catch (err) {
+    console.error('Fatal error starting Fastify server:', err);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+export { startServer };

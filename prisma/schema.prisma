@@ -1,0 +1,61 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Soft-deletion directive (never hard delete)
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  price       Float
+  stock       Int         @default(0)
+  description String?
+  tags        String?     // Stored as JSON string or comma-separated
+  status      String      @default("active") // "active" | "archived"
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?   // Soft-deletion directive
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  customerName String
+  customerEmail String
+  customerPhone String?
+  totalAmount Float
+  status      String      @default("confirmed")
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?   // Soft-deletion directive
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  unitPrice   Float
+  itemTotal   Float
+  createdAt   DateTime @default(now())
+}
