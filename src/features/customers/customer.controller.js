@@ -95,3 +95,4 @@ export async function deleteCustomerHandler(request, reply) {
     });
   }
 }
+

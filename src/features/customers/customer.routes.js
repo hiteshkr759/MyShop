@@ -26,3 +26,4 @@ export default async function customerRoutes(fastify, options) {
   fastify.put('/:id', { schema: updateCustomerSchema }, updateCustomerHandler);
   fastify.delete('/:id', { schema: deleteCustomerSchema }, deleteCustomerHandler);
 }
+
