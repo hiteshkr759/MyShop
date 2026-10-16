@@ -65,13 +65,14 @@ export class OrderService {
           throw new Error(`Stock deduction violation: stock cannot be negative for '${product.name}'`);
         }
 
-        const itemTotal = Number((product.price * item.quantity).toFixed(2));
+        const unitPrice = product.sellingPrice || product.price || 0;
+        const itemTotal = Number((unitPrice * item.quantity).toFixed(2));
         calculatedTotal += itemTotal;
 
         orderItemsData.push({
           productId: product.id,
           quantity: item.quantity,
-          unitPrice: product.price,
+          unitPrice,
           itemTotal
         });
       }

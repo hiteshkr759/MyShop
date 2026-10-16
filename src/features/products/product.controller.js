@@ -3,8 +3,7 @@
 import { productService } from './product.service.js';
 
 export async function getProductsHandler(request, reply) {
-  const { search, categoryId, minPrice, maxPrice } = request.query;
-  const products = await productService.getProducts({ search, categoryId, minPrice, maxPrice });
+  const products = await productService.getProducts(request.query);
 
   return reply.status(200).send({
     success: true,
@@ -31,13 +30,32 @@ export async function getProductByIdHandler(request, reply) {
 }
 
 export async function createProductHandler(request, reply) {
-  const { name, price, categoryId, stock, description, tags } = request.body;
-
-  const created = await productService.createProduct({
+  const {
     name,
+    costPrice,
+    sellingPrice,
     price,
     categoryId,
     stock,
+    fabric,
+    weave,
+    color,
+    blousePiece,
+    description,
+    tags
+  } = request.body;
+
+  const created = await productService.createProduct({
+    name,
+    costPrice,
+    sellingPrice,
+    price,
+    categoryId,
+    stock,
+    fabric,
+    weave,
+    color,
+    blousePiece,
     description,
     tags
   });
@@ -84,4 +102,3 @@ export async function archiveProductHandler(request, reply) {
     data: archived
   });
 }
-

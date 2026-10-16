@@ -71,6 +71,9 @@ async function seedInitialData(app) {
       }
 
       for (const prod of initialProducts) {
+        const costPrice = prod.costPrice !== undefined ? prod.costPrice : Number((prod.price / 1.65).toFixed(2));
+        const sellingPrice = prod.sellingPrice !== undefined ? prod.sellingPrice : prod.price;
+
         await db.product.upsert({
           where: { id: prod.id },
           update: {},
@@ -78,10 +81,16 @@ async function seedInitialData(app) {
             id: prod.id,
             name: prod.name,
             categoryId: prod.categoryId,
-            price: prod.price,
-            stock: prod.stock,
+            costPrice,
+            sellingPrice,
+            price: sellingPrice,
+            stock: prod.stock !== undefined ? prod.stock : 1,
+            fabric: prod.fabric || null,
+            weave: prod.weave || null,
+            color: prod.color || null,
+            blousePiece: prod.blousePiece !== undefined ? prod.blousePiece : true,
             description: prod.description,
-            tags: prod.tags.join(','),
+            tags: Array.isArray(prod.tags) ? prod.tags.join(',') : (prod.tags || ''),
             status: 'active'
           }
         });

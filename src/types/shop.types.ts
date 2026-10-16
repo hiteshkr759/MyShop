@@ -10,14 +10,20 @@ export interface Product {
   id: string;
   name: string;
   categoryId: string;
-  price: number;
+  costPrice: number;
+  sellingPrice: number;
+  profit?: number;
   stock: number;
-  description: string;
-  tags?: string[];
+  description?: string | null;
+  fabric?: string | null;
+  weave?: string | null;
+  color?: string | null;
+  blousePiece: boolean;
+  tags?: string | null;
   status: 'active' | 'archived';
   createdAt: string;
   updatedAt?: string;
-  archivedAt?: string;
+  deletedAt?: string | null;
 }
 
 export interface OrderItem {

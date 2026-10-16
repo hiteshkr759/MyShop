@@ -21,19 +21,25 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(uuid())
-  name        String
-  categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
-  price       Float
-  stock       Int         @default(0)
-  description String?
-  tags        String?     // Stored as JSON string or comma-separated
-  status      String      @default("active") // "active" | "archived"
-  orderItems  OrderItem[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?   // Soft-deletion directive
+  id           String      @id @default(uuid())
+  name         String
+  categoryId   String
+  category     Category    @relation(fields: [categoryId], references: [id])
+  costPrice    Float       @default(0) // Procurement Cost (CP)
+  sellingPrice Float       @default(0) // Retail Price (SP = CP * 1.65)
+  price        Float?      @default(0) // Deprecated: Retained under Zero-Deletion Directive
+  stock        Int         @default(1) // Available stock (default 1 for single-piece sarees)
+  description  String?
+  fabric       String?     // e.g. Pure Silk, Cotton, Georgette, Organza
+  weave        String?     // e.g. Banarasi, Kanjeevaram, Handloom, Zari
+  color        String?     // Primary saree color
+  blousePiece  Boolean     @default(true) // Unstitched blouse piece included
+  tags         String?     // Stored as JSON string or comma-separated
+  status       String      @default("active") // "active" | "archived"
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  deletedAt    DateTime?   // Soft-deletion directive
 }
 
 model Order {
