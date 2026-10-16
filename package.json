@@ -9,7 +9,7 @@
     "postinstall": "prisma generate",
     "predev": "node scripts/enforce-antigravity-lock.js",
     "prebuild": "node scripts/enforce-antigravity-lock.js",
-    "build": "prisma generate && node scripts/enforce-antigravity-lock.js",
+    "build": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",

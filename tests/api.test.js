@@ -197,8 +197,11 @@ describe('MyShop Fastify API Integration Tests', () => {
     // Get product to order
     const prodRes = await app.inject({ method: 'GET', url: '/api/v1/products' });
     const prodData = JSON.parse(prodRes.body);
-    const targetProduct = prodData.data.find(p => p.stock >= 2) || prodData.data[0];
+    const targetProduct = prodData.data.find(p => p.stock >= 2 && p.sellingPrice > 0) || prodData.data[0];
     const initialStock = targetProduct.stock;
+    const expectedPrice = (targetProduct.sellingPrice && targetProduct.sellingPrice > 0)
+      ? targetProduct.sellingPrice
+      : targetProduct.price;
 
     const orderPayload = {
       customer: {
@@ -221,8 +224,8 @@ describe('MyShop Fastify API Integration Tests', () => {
     assert.equal(res.statusCode, 201);
     assert.equal(data.success, true);
     assert.equal(data.data.customerEmail, 'aishwarya@example.com');
-    assert.equal(data.data.items[0].unitPrice, targetProduct.sellingPrice);
-    assert.equal(data.data.totalAmount, targetProduct.sellingPrice);
+    assert.equal(data.data.items[0].unitPrice, expectedPrice);
+    assert.equal(data.data.totalAmount, expectedPrice);
 
     // Verify stock deduction in database
     const verifyProdRes = await app.inject({ method: 'GET', url: `/api/v1/products/${targetProduct.id}` });
