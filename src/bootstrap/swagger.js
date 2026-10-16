@@ -48,3 +48,4 @@ export async function initSwagger(app) {
 
   app.log.info('Swagger OpenAPI documentation initialized at /docs');
 }
+
