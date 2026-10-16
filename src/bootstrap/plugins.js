@@ -4,6 +4,7 @@ import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import fastifySensible from '@fastify/sensible';
 import { initDatabase } from './database.js';
+import { initSupabase } from './supabase.js';
 
 /**
  * Initializes and registers shared Fastify integration plugins
@@ -27,6 +28,9 @@ export async function initPlugins(app) {
   // Initialize and decorate shared Prisma database client
   const db = initDatabase(app);
   app.decorate('db', db);
+
+  // Initialize and decorate shared Supabase SDK client
+  initSupabase(app);
 
   app.log.info('Shared plugins and integration resources initialized.');
 }

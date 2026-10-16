@@ -36,6 +36,7 @@
     "@fastify/helmet": "^13.2.0",
     "@fastify/sensible": "^6.0.7",
     "@prisma/client": "^6.4.1",
+    "@supabase/supabase-js": "^2.117.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
