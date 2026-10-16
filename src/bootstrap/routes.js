@@ -17,6 +17,7 @@ export async function initRoutes(app) {
       message: `Welcome to ${config.shopName} Fastify API`,
       architecture: 'Feature-Wise Modular with Central Bootstrap',
       documentation: {
+        swagger: '/docs',
         health: `${config.apiPrefix}/health`,
         products: `${config.apiPrefix}/products`,
         categories: `${config.apiPrefix}/categories`,

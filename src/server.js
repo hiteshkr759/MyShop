@@ -15,10 +15,11 @@ async function startServer() {
     console.log(`===============================================`);
     console.log(`🚀 ${config.shopName} Fastify Server is running`);
     console.log(`📡 URL: http://localhost:${config.port}`);
+    console.log(`📖 Swagger Docs: http://localhost:${config.port}/docs`);
     console.log(`🏥 Health Check: http://localhost:${config.port}${config.apiPrefix}/health`);
     console.log(`🛍️  Products: http://localhost:${config.port}${config.apiPrefix}/products`);
     console.log(`📁 Architecture: Feature-Wise with Central Bootstrap`);
-    console.log(`🗄️  Database: Prisma ORM (SQLite / dev.db)`);
+    console.log(`🗄️  Database: Prisma ORM (Supabase PostgreSQL)`);
     console.log(`⚙️  Environment: ${config.env}`);
     console.log(`🛡️  AI Guardrails: Active (Zero-Deletion, Scope Restricted)`);
     console.log(`===============================================`);

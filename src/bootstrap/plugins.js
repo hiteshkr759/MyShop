@@ -5,15 +5,16 @@ import fastifyHelmet from '@fastify/helmet';
 import fastifySensible from '@fastify/sensible';
 import { initDatabase } from './database.js';
 import { initSupabase } from './supabase.js';
+import { initSwagger } from './swagger.js';
 
 /**
  * Initializes and registers shared Fastify integration plugins
  * Enforces security headers, CORS, error helpers, and database decoration
  */
 export async function initPlugins(app) {
-  // Security headers via Helmet
+  // Security headers via Helmet (configured to allow Swagger UI)
   await app.register(fastifyHelmet, {
-    contentSecurityPolicy: process.env.NODE_ENV === 'production'
+    contentSecurityPolicy: false
   });
 
   // CORS configuration
@@ -32,6 +33,9 @@ export async function initPlugins(app) {
   // Initialize and decorate shared Supabase SDK client
   initSupabase(app);
 
-  app.log.info('Shared plugins and integration resources initialized.');
+  // Initialize Swagger OpenAPI specification & Swagger UI
+  await initSwagger(app);
+
+  app.log.info('Shared plugins, database, and Swagger documentation initialized.');
 }
 

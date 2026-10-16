@@ -96,6 +96,7 @@ async function seedInitialData(app) {
 
 export * from './database.js';
 export * from './supabase.js';
+export * from './swagger.js';
 export * from './plugins.js';
 export * from './routes.js';
 export * from './lifecycle.js';

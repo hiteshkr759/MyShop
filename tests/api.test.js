@@ -25,6 +25,32 @@ describe('MyShop Fastify API Integration Tests', () => {
     assert.equal(res.statusCode, 200);
     assert.equal(data.success, true);
     assert.ok(data.documentation);
+    assert.equal(data.documentation.swagger, '/docs');
+  });
+
+  test('GET /docs serves interactive Swagger UI', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/docs/'
+    });
+
+    assert.equal(res.statusCode, 200);
+    assert.ok(res.body.includes('swagger-ui') || res.headers['content-type'].includes('html'));
+  });
+
+  test('GET /docs/json returns valid OpenAPI 3.0 specification', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/docs/json'
+    });
+    const spec = JSON.parse(res.body);
+
+    assert.equal(res.statusCode, 200);
+    assert.ok(spec.openapi);
+    assert.ok(spec.paths['/api/v1/health/'] || spec.paths['/api/v1/health']);
+    assert.ok(spec.paths['/api/v1/products/'] || spec.paths['/api/v1/products']);
+    assert.ok(spec.paths['/api/v1/categories/'] || spec.paths['/api/v1/categories']);
+    assert.ok(spec.paths['/api/v1/orders/'] || spec.paths['/api/v1/orders']);
   });
 
   test('GET /api/v1/health returns UP status', async () => {
