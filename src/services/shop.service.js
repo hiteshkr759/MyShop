@@ -1,3 +1,4 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
 import { initialCategories, initialProducts, initialOrders } from '../data/mockData.js';
 
 class ShopService {

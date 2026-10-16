@@ -1,3 +1,4 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
 import test, { describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import app from '../src/app.js';

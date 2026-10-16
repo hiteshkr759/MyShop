@@ -1,3 +1,4 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
 import app from './app.js';
 import { config } from './config/index.js';
 

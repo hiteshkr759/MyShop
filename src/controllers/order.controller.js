@@ -1,3 +1,4 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
 import { shopService } from '../services/shop.service.js';
 
 export const getOrders = (req, res) => {

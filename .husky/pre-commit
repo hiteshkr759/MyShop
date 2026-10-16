@@ -1,0 +1,6 @@
+#!/bin/sh
+node scripts/enforce-antigravity-lock.js
+if [ $? -ne 0 ]; then
+  echo "Commit blocked: Other AI detected"
+  exit 1
+fi

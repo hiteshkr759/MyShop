@@ -1,3 +1,4 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
 import { config } from '../config/index.js';
 
 export const getHealth = (req, res) => {

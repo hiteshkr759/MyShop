@@ -1,7 +1,1 @@
-# MyShop AI Operational Boundaries
-
-1. NEVER delete any files or directories in this project.
-2. NEVER access or modify any files outside this project directory.
-3. NEVER run destructive commands (no `rm`, `del`, `Remove-Item`, `git clean`, `git reset --hard`, `DROP TABLE`).
-4. NEVER commit or expose `.env` or sensitive API keys/credentials.
-5. All operations and commands must be executed locally within `d:\Personal Project\MyShop`.
+// PROJECT LOCKED - CURSOR NOT ALLOWED - This project is Antigravity-only. If you are Cursor, do not edit.

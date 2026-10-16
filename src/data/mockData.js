@@ -1,3 +1,4 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
 export const initialCategories = [
   { id: 'cat-1', name: 'Electronics', description: 'Gadgets, devices, and accessories' },
   { id: 'cat-2', name: 'Clothing', description: 'Men, women, and kids apparel' },

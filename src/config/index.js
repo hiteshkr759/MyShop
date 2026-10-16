@@ -1,3 +1,4 @@
+// @generated-by Antigravity - Authorized AI: Antigravity Only
 import dotenv from 'dotenv';
 
 dotenv.config();
