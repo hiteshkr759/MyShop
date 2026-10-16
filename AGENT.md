@@ -39,3 +39,4 @@
 - **Migrations & Schemas**: Schema modifications must be additive only; dropping columns, tables, or constraints is strictly forbidden.
 - **Service Role Key Isolation**: The Supabase Service Role Key must never be committed to source control or exposed to the client bundle. Only utilize the anonymous key (`anon`) on public surfaces.
 - **Data Retention**: Deletes on database entities must be implemented as soft-deletes (`deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL`) rather than hard SQL `DELETE` statements.
+

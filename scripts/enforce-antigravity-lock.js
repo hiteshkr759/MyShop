@@ -29,3 +29,4 @@ if (!fs.existsSync('ANTIGRAVITY.LOCK')) {
 
 if (violated) process.exit(1);
 console.log('✅ Antigravity lock verified - Authorized AI');
+

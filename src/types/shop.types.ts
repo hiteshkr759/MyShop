@@ -42,3 +42,4 @@ export interface Order {
   status: 'confirmed' | 'processing' | 'shipped' | 'delivered';
   createdAt: string;
 }
+

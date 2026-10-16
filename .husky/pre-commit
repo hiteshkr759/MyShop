@@ -4,3 +4,4 @@ if [ $? -ne 0 ]; then
   echo "Commit blocked: Other AI detected"
   exit 1
 fi
+
