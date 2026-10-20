@@ -78,7 +78,8 @@ export class CustomerService {
                     name: true,
                     sellingPrice: true,
                     color: true,
-                    fabric: true
+                    fabric: true,
+                    imageUrl: true
                   }
                 }
               }
@@ -112,7 +113,8 @@ export class CustomerService {
                     name: true,
                     sellingPrice: true,
                     color: true,
-                    fabric: true
+                    fabric: true,
+                    imageUrl: true
                   }
                 }
               }

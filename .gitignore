@@ -40,3 +40,8 @@ coverage/
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Uploaded user assets
+public/uploads/*
+!public/uploads/.gitkeep
+
