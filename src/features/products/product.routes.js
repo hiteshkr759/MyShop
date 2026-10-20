@@ -6,6 +6,7 @@ import {
   createProductHandler,
   updateProductHandler,
   archiveProductHandler,
+  unarchiveProductHandler,
   uploadProductImageHandler,
   uploadStandaloneImageHandler
 } from './product.controller.js';
@@ -16,6 +17,7 @@ import {
   createProductSchema,
   updateProductSchema,
   archiveProductSchema,
+  unarchiveProductSchema,
   uploadProductImageSchema,
   uploadStandaloneImageSchema
 } from './product.schema.js';
@@ -30,6 +32,7 @@ export default async function productRoutes(fastify) {
   fastify.post('/', { schema: createProductSchema }, createProductHandler);
   fastify.put('/:id', { schema: updateProductSchema }, updateProductHandler);
   fastify.patch('/:id/archive', { schema: archiveProductSchema }, archiveProductHandler);
+  fastify.patch('/:id/unarchive', { schema: unarchiveProductSchema }, unarchiveProductHandler);
 
   // 3. Product image upload & attachment endpoints
   fastify.post('/:id/upload-image', { schema: uploadProductImageSchema }, uploadProductImageHandler);

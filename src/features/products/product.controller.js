@@ -109,6 +109,24 @@ export async function archiveProductHandler(request, reply) {
   });
 }
 
+export async function unarchiveProductHandler(request, reply) {
+  const { id } = request.params;
+  const unarchived = await productService.unarchiveProduct(id);
+
+  if (!unarchived) {
+    return reply.status(404).send({
+      success: false,
+      error: { message: `Product with ID '${id}' not found` }
+    });
+  }
+
+  return reply.status(200).send({
+    success: true,
+    message: 'Product unarchived successfully',
+    data: unarchived
+  });
+}
+
 /**
  * Handles image file upload for a specific product
  * Supports multipart/form-data or base64 JSON payload

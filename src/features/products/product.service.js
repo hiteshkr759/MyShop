@@ -328,7 +328,7 @@ export class ProductService {
   // Soft-archive product respecting zero-deletion policy
   async archiveProduct(id) {
     const existing = await this.db.product.findFirst({
-      where: { id, deletedAt: null }
+      where: { id }
     });
     if (!existing) return null;
 
@@ -344,6 +344,27 @@ export class ProductService {
     });
 
     return enrichProduct(archived);
+  }
+
+  // Restores an archived product back to active status
+  async unarchiveProduct(id) {
+    const existing = await this.db.product.findFirst({
+      where: { id }
+    });
+    if (!existing) return null;
+
+    const unarchived = await this.db.product.update({
+      where: { id },
+      data: {
+        status: 'active',
+        deletedAt: null
+      },
+      include: {
+        category: true
+      }
+    });
+
+    return enrichProduct(unarchived);
   }
 }
 

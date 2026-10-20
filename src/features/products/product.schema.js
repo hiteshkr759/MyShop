@@ -236,6 +236,40 @@ export const archiveProductSchema = {
   }
 };
 
+export const unarchiveProductSchema = {
+  description: 'Restore an archived product back to active catalog',
+  tags: ['Products'],
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: productItemSchema
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        error: {
+          type: 'object',
+          properties: {
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }
+};
+
 export const uploadProductImageSchema = {
   description: 'Upload and attach an image to a saree product (multipart/form-data with file or JSON with base64)',
   tags: ['Products'],
