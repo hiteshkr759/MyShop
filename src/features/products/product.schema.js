@@ -72,7 +72,7 @@ export const getProductsSchema = {
       maxSellingPrice: { type: 'number' },
       minCostPrice: { type: 'number', description: 'Minimum procurement cost price' },
       maxCostPrice: { type: 'number', description: 'Maximum procurement cost price' },
-      status: { type: 'string', default: 'active', description: 'Filter by status ("active", "archived", or "all")' },
+      status: { type: 'string', description: 'Filter by status ("active", "archived", or "all"). Default returns active first and archived last.' },
       sortBy: {
         type: 'string',
         enum: ['newest', 'oldest', 'price_asc', 'price_desc', 'name_asc', 'name_desc', 'stock_desc', 'stock_asc'],

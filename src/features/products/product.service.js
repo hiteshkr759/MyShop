@@ -56,15 +56,21 @@ export class ProductService {
     const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 10));
     const skip = (page - 1) * limit;
 
-    const where = {
-      deletedAt: null
-    };
+    const where = {};
 
-    // Status filter (default: 'active', or custom e.g. 'archived', or 'all')
-    if (query.status && query.status !== 'all') {
-      where.status = query.status;
-    } else if (!query.status) {
+    // Status filtering:
+    // - status='active': only active products
+    // - status='archived': only archived products (including soft-archived items)
+    // - status='all' or omitted (default): return BOTH active and archived products (archived sorted last)
+    if (query.status === 'active') {
       where.status = 'active';
+      where.deletedAt = null;
+    } else if (query.status === 'archived') {
+      where.status = 'archived';
+    } else if (query.status && query.status !== 'all') {
+      where.status = query.status;
+    } else {
+      where.status = { in: ['active', 'archived'] };
     }
 
     // Category filters
@@ -135,35 +141,33 @@ export class ProductService {
       ];
     }
 
-    // Sort options
-    let orderBy = { createdAt: 'desc' };
+    // Sort options: By default, active products first and archived products last ('status: asc'), with 'createdAt: desc'
+    let orderBy = [{ status: 'asc' }, { createdAt: 'desc' }];
     switch (query.sortBy) {
       case 'price_asc':
-        orderBy = { sellingPrice: 'asc' };
+        orderBy = [{ status: 'asc' }, { sellingPrice: 'asc' }, { createdAt: 'desc' }];
         break;
       case 'price_desc':
-        orderBy = { sellingPrice: 'desc' };
-        break;
-      case 'newest':
-        orderBy = { createdAt: 'desc' };
+        orderBy = [{ status: 'asc' }, { sellingPrice: 'desc' }, { createdAt: 'desc' }];
         break;
       case 'oldest':
-        orderBy = { createdAt: 'asc' };
+        orderBy = [{ status: 'asc' }, { createdAt: 'asc' }];
         break;
       case 'name_asc':
-        orderBy = { name: 'asc' };
+        orderBy = [{ status: 'asc' }, { name: 'asc' }, { createdAt: 'desc' }];
         break;
       case 'name_desc':
-        orderBy = { name: 'desc' };
+        orderBy = [{ status: 'asc' }, { name: 'desc' }, { createdAt: 'desc' }];
         break;
       case 'stock_desc':
-        orderBy = { stock: 'desc' };
+        orderBy = [{ status: 'asc' }, { stock: 'desc' }, { createdAt: 'desc' }];
         break;
       case 'stock_asc':
-        orderBy = { stock: 'asc' };
+        orderBy = [{ status: 'asc' }, { stock: 'asc' }, { createdAt: 'desc' }];
         break;
+      case 'newest':
       default:
-        orderBy = { createdAt: 'desc' };
+        orderBy = [{ status: 'asc' }, { createdAt: 'desc' }];
     }
 
     const [total, products] = await Promise.all([
@@ -196,7 +200,7 @@ export class ProductService {
 
   async getProductById(id) {
     const product = await this.db.product.findFirst({
-      where: { id, deletedAt: null },
+      where: { id },
       include: {
         category: true
       }
