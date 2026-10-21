@@ -83,3 +83,5 @@ export async function initPlugins(app) {
 
   app.log.info('Shared plugins, database, static uploads, and Swagger documentation initialized.');
 }
+
+}
