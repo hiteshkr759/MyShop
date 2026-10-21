@@ -19,30 +19,60 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft-deletion directive (never hard delete)
+
+  @@index([deletedAt])
 }
 
 model Product {
-  id           String      @id @default(uuid())
+  id           String           @id @default(uuid())
   name         String
   categoryId   String
-  category     Category    @relation(fields: [categoryId], references: [id])
-  costPrice    Float       @default(0) // Procurement Cost (CP)
-  sellingPrice Float       @default(0) // Retail Price (SP = CP * 1.65)
-  price        Float?      @default(0) // Deprecated: Retained under Zero-Deletion Directive
-  stock        Int         @default(1) // Available stock (default 1 for single-piece sarees)
+  category     Category         @relation(fields: [categoryId], references: [id])
+  costPrice    Float            @default(0) // Procurement Cost (CP)
+  sellingPrice Float            @default(0) // Retail Price (SP = CP * 1.65)
+  price        Float?           @default(0) // Deprecated: Retained under Zero-Deletion Directive
+  stock        Int              @default(1) // Available stock (default 1 for single-piece sarees)
   description  String?
-  fabric       String?     // e.g. Pure Silk, Cotton, Georgette, Organza
-  weave        String?     // e.g. Banarasi, Kanjeevaram, Handloom, Zari
-  color        String?     // Primary saree color
-  blousePiece  Boolean     @default(true) // Unstitched blouse piece included
-  imageUrl     String?     // Primary saree display image URL
-  images       String[]    @default([]) // Saree gallery image URLs
-  tags         String?     // Stored as JSON string or comma-separated
-  status       String      @default("active") // "active" | "archived"
+  fabric       String?          // e.g. Pure Silk, Cotton, Georgette, Organza
+  weave        String?          // e.g. Banarasi, Kanjeevaram, Handloom, Zari
+  color        String?          // Primary saree color (fallback for legacy single-color catalog)
+  blousePiece  Boolean          @default(true) // Unstitched blouse piece included
+  imageUrl     String?          // Primary saree display image URL (fallback thumbnail)
+  images       String[]         @default([]) // Saree gallery image URLs (fallback gallery)
+  tags         String?          // Stored as JSON string or comma-separated
+  status       String           @default("active") // "active" | "archived"
+  variants     ProductVariant[] // Color variants with dedicated photo galleries and stock
   orderItems   OrderItem[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?        // Soft-deletion directive
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model ProductVariant {
+  id           String      @id @default(uuid())
+  productId    String
+  product      Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  colorName    String      // e.g. "Crimson Red & Antique Gold"
+  colorCode    String?     // Hex code for color swatch UI picker, e.g. "#8B0000"
+  stock        Int         @default(1) // Dedicated inventory for this color
+  costPrice    Float?      // Optional custom cost price for specific dye/zari
+  sellingPrice Float?      // Optional custom selling price
+  images       String[]    @default([]) // Ordered array of photo URLs for this color
+  isDefault    Boolean     @default(false) // Primary display variant on catalog cards
+  status       String      @default("active") // "active" | "archived"
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   deletedAt    DateTime?   // Soft-deletion directive
+  orderItems   OrderItem[]
+
+  @@unique([productId, colorName])
+  @@index([productId])
+  @@index([status])
+  @@index([deletedAt])
 }
 
 model Customer {
@@ -55,6 +85,8 @@ model Customer {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   deletedAt   DateTime?   // Soft-deletion directive (never hard delete)
+
+  @@index([deletedAt])
 }
 
 model Order {
@@ -72,16 +104,27 @@ model Order {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   deletedAt       DateTime?   // Soft-deletion directive
+
+  @@index([customerId])
+  @@index([status])
+  @@index([deletedAt])
 }
 
 model OrderItem {
-  id          String   @id @default(uuid())
+  id          String          @id @default(uuid())
   orderId     String
-  order       Order    @relation(fields: [orderId], references: [id])
+  order       Order           @relation(fields: [orderId], references: [id])
   productId   String
-  product     Product  @relation(fields: [productId], references: [id])
+  product     Product         @relation(fields: [productId], references: [id])
+  variantId   String?         // FK to specific color variant purchased
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  colorName   String?         // Historical snapshot: color name at purchase time
   quantity    Int
   unitPrice   Float
   itemTotal   Float
-  createdAt   DateTime @default(now())
+  createdAt   DateTime        @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
 }

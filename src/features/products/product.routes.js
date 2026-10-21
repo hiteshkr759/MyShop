@@ -8,7 +8,11 @@ import {
   archiveProductHandler,
   unarchiveProductHandler,
   uploadProductImageHandler,
-  uploadStandaloneImageHandler
+  uploadStandaloneImageHandler,
+  createVariantHandler,
+  updateVariantHandler,
+  archiveVariantHandler,
+  uploadVariantImagesHandler
 } from './product.controller.js';
 
 import {
@@ -19,7 +23,11 @@ import {
   archiveProductSchema,
   unarchiveProductSchema,
   uploadProductImageSchema,
-  uploadStandaloneImageSchema
+  uploadStandaloneImageSchema,
+  createVariantSchema,
+  updateVariantSchema,
+  archiveVariantSchema,
+  uploadVariantImagesSchema
 } from './product.schema.js';
 
 export default async function productRoutes(fastify) {
@@ -37,4 +45,10 @@ export default async function productRoutes(fastify) {
   // 3. Product image upload & attachment endpoints
   fastify.post('/:id/upload-image', { schema: uploadProductImageSchema }, uploadProductImageHandler);
   fastify.post('/:id/image', { schema: uploadProductImageSchema }, uploadProductImageHandler);
+
+  // 4. Color Variant & Multi-Photo Gallery endpoints
+  fastify.post('/:id/variants', { schema: createVariantSchema }, createVariantHandler);
+  fastify.put('/:id/variants/:variantId', { schema: updateVariantSchema }, updateVariantHandler);
+  fastify.delete('/:id/variants/:variantId', { schema: archiveVariantSchema }, archiveVariantHandler);
+  fastify.post('/:id/variants/:variantId/images', { schema: uploadVariantImagesSchema }, uploadVariantImagesHandler);
 }

@@ -14,7 +14,6 @@ if (forceCloud) {
 } else if (forceLocal) {
   dotenv.config({ path: path.resolve(process.cwd(), '.env.local'), override: true });
 } else {
-  // Default: load .env, override with .env.local if present
   dotenv.config();
   const envLocalPath = path.resolve(process.cwd(), '.env.local');
   if (fs.existsSync(envLocalPath)) {
@@ -30,7 +29,6 @@ const prisma = new PrismaClient();
 // ==========================================
 
 export const seedCategories = [
-  // Saree Reselling Categories
   {
     id: 'cat-saree-silk',
     name: 'Silk Sarees',
@@ -51,7 +49,6 @@ export const seedCategories = [
     name: 'Traditional Sarees',
     description: 'Paithani, Bandhani, Patola, Sambalpuri, Kasavu heritage weaves'
   },
-  // General E-Commerce Categories
   {
     id: 'cat-1',
     name: 'Electronics',
@@ -83,13 +80,16 @@ export const seedProducts = [
     costPrice: 5000,
     sellingPrice: 8250,
     price: 8250,
-    stock: 1,
+    stock: 5, // Total stock across 3 color variants
     fabric: 'Pure Katan Silk',
     weave: 'Banarasi Kadwa',
     color: 'Crimson Red & Antique Gold',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
-    images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'],
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
     description: 'Handwoven pure katan silk saree adorned with intricate floral zari jaal and regal pallu.',
     tags: 'silk,banarasi,handloom,bridal,wedding',
     status: 'active'
@@ -101,13 +101,15 @@ export const seedProducts = [
     costPrice: 8000,
     sellingPrice: 13200,
     price: 13200,
-    stock: 1,
+    stock: 3, // Total stock across 2 color variants
     fabric: 'Mulberry Silk',
     weave: 'Kanjeevaram Korvai',
     color: 'Peacock Blue & Magenta',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
-    images: ['https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'],
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
     description: 'Authentic Kanchipuram silk saree with contrasting korvai border and pure gold zari motifs.',
     tags: 'silk,kanjeevaram,temple-border,bridal',
     status: 'active'
@@ -119,13 +121,15 @@ export const seedProducts = [
     costPrice: 1800,
     sellingPrice: 2970,
     price: 2970,
-    stock: 3,
+    stock: 5,
     fabric: 'Cotton Silk',
     weave: 'Chanderi Handloom',
     color: 'Mint Green & Silver',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
-    images: ['https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'],
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
+    ],
     description: 'Lightweight and sheer Chanderi handloom saree featuring silver zari booti and soft drape.',
     tags: 'cotton-silk,chanderi,handloom,summer-wear',
     status: 'active'
@@ -137,13 +141,15 @@ export const seedProducts = [
     costPrice: 2400,
     sellingPrice: 3960,
     price: 3960,
-    stock: 2,
+    stock: 3,
     fabric: 'Pure Organza',
     weave: 'Embroidered',
     color: 'Pastel Lavender',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
-    images: ['https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'],
+    images: [
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
     description: 'Contemporary pastel organza saree featuring delicate floral thread embroidery and scalloped border.',
     tags: 'organza,party-wear,pastel,designer',
     status: 'active'
@@ -184,7 +190,6 @@ export const seedProducts = [
     tags: 'cotton,jamdani,handloom,bengal-weave',
     status: 'active'
   },
-  // General Catalog Products
   {
     id: 'prod-1',
     name: 'Wireless Noise-Canceling Headphones',
@@ -235,6 +240,121 @@ export const seedProducts = [
   }
 ];
 
+// Color Variants with Dedicated Stock and Multiple Photos
+export const seedVariants = [
+  // Saree 1 variants (Banarasi Katan Silk)
+  {
+    id: 'var-saree1-red',
+    productId: 'saree-1',
+    colorName: 'Crimson Red & Antique Gold',
+    colorCode: '#8B0000',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree1-green',
+    productId: 'saree-1',
+    colorName: 'Royal Emerald Green',
+    colorCode: '#046A38',
+    stock: 1,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+  {
+    id: 'var-saree1-blue',
+    productId: 'saree-1',
+    colorName: 'Deep Royal Blue',
+    colorCode: '#002366',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+  // Saree 2 variants (Kanjeevaram Pure Zari Silk)
+  {
+    id: 'var-saree2-blue',
+    productId: 'saree-2',
+    colorName: 'Peacock Blue & Magenta',
+    colorCode: '#005F73',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree2-mustard',
+    productId: 'saree-2',
+    colorName: 'Sunset Mustard & Vermillion',
+    colorCode: '#E0A96D',
+    stock: 1,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+  // Saree 3 variants (Chanderi Handloom)
+  {
+    id: 'var-saree3-mint',
+    productId: 'saree-3',
+    colorName: 'Mint Green & Silver',
+    colorCode: '#98FF98',
+    stock: 3,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree3-peach',
+    productId: 'saree-3',
+    colorName: 'Pastel Peach & Gold',
+    colorCode: '#FFE5B4',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+  // Saree 4 variants (Floral Organza)
+  {
+    id: 'var-saree4-lavender',
+    productId: 'saree-4',
+    colorName: 'Pastel Lavender',
+    colorCode: '#E6E6FA',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree4-pink',
+    productId: 'saree-4',
+    colorName: 'Blush Powder Pink',
+    colorCode: '#FFB6C1',
+    stock: 1,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  }
+];
+
 export const seedCustomers = [
   {
     id: 'cust-101',
@@ -281,6 +401,8 @@ export const seedOrders = [
       {
         id: 'item-101-1',
         productId: 'saree-1',
+        variantId: 'var-saree1-red',
+        colorName: 'Crimson Red & Antique Gold',
         quantity: 1,
         unitPrice: 8250.0,
         itemTotal: 8250.0
@@ -289,7 +411,7 @@ export const seedOrders = [
   },
   {
     id: 'ord-test-102',
-    customerId: 'cust-101', // Second order for Priya to demonstrate past order history
+    customerId: 'cust-101',
     customerName: 'Priya Sharma',
     customerEmail: 'priya.sharma@example.com',
     customerPhone: '+919876543210',
@@ -301,6 +423,8 @@ export const seedOrders = [
       {
         id: 'item-102-1',
         productId: 'saree-3',
+        variantId: 'var-saree3-mint',
+        colorName: 'Mint Green & Silver',
         quantity: 1,
         unitPrice: 2970.0,
         itemTotal: 2970.0
@@ -321,6 +445,8 @@ export const seedOrders = [
       {
         id: 'item-103-1',
         productId: 'saree-2',
+        variantId: 'var-saree2-blue',
+        colorName: 'Peacock Blue & Magenta',
         quantity: 1,
         unitPrice: 13200.0,
         itemTotal: 13200.0
@@ -341,6 +467,8 @@ export const seedOrders = [
       {
         id: 'item-104-1',
         productId: 'saree-4',
+        variantId: 'var-saree4-lavender',
+        colorName: 'Pastel Lavender',
         quantity: 1,
         unitPrice: 3960.0,
         itemTotal: 3960.0
@@ -365,7 +493,7 @@ async function seedDatabase() {
 
   try {
     // 1. Seed Categories
-    console.log(`📦 [1/4] Seeding ${seedCategories.length} Categories...`);
+    console.log(`📦 [1/5] Seeding ${seedCategories.length} Categories...`);
     for (const cat of seedCategories) {
       const record = await prisma.category.upsert({
         where: { name: cat.name },
@@ -383,7 +511,7 @@ async function seedDatabase() {
     }
 
     // 2. Seed Products
-    console.log(`\n👗 [2/4] Seeding ${seedProducts.length} Products (Sarees + Catalog)...`);
+    console.log(`\n👗 [2/5] Seeding ${seedProducts.length} Products (Sarees + Catalog)...`);
     for (const prod of seedProducts) {
       const record = await prisma.product.upsert({
         where: { id: prod.id },
@@ -428,8 +556,40 @@ async function seedDatabase() {
       console.log(`   ✓ Product: ${record.name} | CP: ₹${record.costPrice} | SP: ₹${record.sellingPrice} (+65%)`);
     }
 
-    // 3. Seed Customers
-    console.log(`\n👥 [3/4] Seeding ${seedCustomers.length} Customers...`);
+    // 3. Seed Color Variants with Multiple Photos
+    console.log(`\n🎨 [3/5] Seeding ${seedVariants.length} Color Variants & Photo Galleries...`);
+    for (const v of seedVariants) {
+      const variantRecord = await prisma.productVariant.upsert({
+        where: {
+          productId_colorName: {
+            productId: v.productId,
+            colorName: v.colorName
+          }
+        },
+        update: {
+          colorCode: v.colorCode,
+          stock: v.stock,
+          images: v.images,
+          isDefault: v.isDefault,
+          status: 'active',
+          deletedAt: null
+        },
+        create: {
+          id: v.id,
+          productId: v.productId,
+          colorName: v.colorName,
+          colorCode: v.colorCode,
+          stock: v.stock,
+          images: v.images,
+          isDefault: v.isDefault,
+          status: 'active'
+        }
+      });
+      console.log(`   ✓ Color: ${variantRecord.colorName} (${variantRecord.colorCode}) | Stock: ${variantRecord.stock} | Photos: ${variantRecord.images.length}`);
+    }
+
+    // 4. Seed Customers
+    console.log(`\n👥 [4/5] Seeding ${seedCustomers.length} Customers...`);
     for (const cust of seedCustomers) {
       const record = await prisma.customer.upsert({
         where: { phoneNumber: cust.phoneNumber },
@@ -450,15 +610,25 @@ async function seedDatabase() {
       console.log(`   ✓ Customer: ${record.name} | Phone: ${record.phoneNumber} | Area: ${record.area}`);
     }
 
-    // 4. Seed Orders & Items
-    console.log(`\n🧾 [4/4] Seeding ${seedOrders.length} Orders & Order Items...`);
+    // 5. Seed Orders & Items
+    console.log(`\n🧾 [5/5] Seeding ${seedOrders.length} Orders & Order Items...`);
     for (const ord of seedOrders) {
       const { items, ...orderData } = ord;
+
+      let effectiveCustomerId = orderData.customerId;
+      if (orderData.customerPhone) {
+        const foundCustomer = await prisma.customer.findUnique({
+          where: { phoneNumber: orderData.customerPhone }
+        });
+        if (foundCustomer) {
+          effectiveCustomerId = foundCustomer.id;
+        }
+      }
 
       const orderRecord = await prisma.order.upsert({
         where: { id: orderData.id },
         update: {
-          customerId: orderData.customerId,
+          customerId: effectiveCustomerId,
           customerName: orderData.customerName,
           customerEmail: orderData.customerEmail,
           customerPhone: orderData.customerPhone,
@@ -470,7 +640,7 @@ async function seedDatabase() {
         },
         create: {
           id: orderData.id,
-          customerId: orderData.customerId,
+          customerId: effectiveCustomerId,
           customerName: orderData.customerName,
           customerEmail: orderData.customerEmail,
           customerPhone: orderData.customerPhone,
@@ -487,6 +657,8 @@ async function seedDatabase() {
           update: {
             orderId: orderRecord.id,
             productId: item.productId,
+            variantId: item.variantId || null,
+            colorName: item.colorName || null,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             itemTotal: item.itemTotal
@@ -495,6 +667,8 @@ async function seedDatabase() {
             id: item.id,
             orderId: orderRecord.id,
             productId: item.productId,
+            variantId: item.variantId || null,
+            colorName: item.colorName || null,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             itemTotal: item.itemTotal
@@ -505,15 +679,16 @@ async function seedDatabase() {
       console.log(`   ✓ Order ${orderRecord.id}: Customer: ${orderRecord.customerName} | Total: ₹${orderRecord.totalAmount} | Status: ${orderRecord.status}`);
     }
 
-    // 5. Verification & Record Counts
+    // 6. Verification & Record Counts
     console.log(`\n====================================================`);
     console.log(`🎉 SEEDING COMPLETED SUCCESSFULLY!`);
     console.log(`📊 Synchronized Table Counts in ${targetLabel}:`);
-    console.log(`   - Categories: ${await prisma.category.count()}`);
-    console.log(`   - Products:   ${await prisma.product.count()}`);
-    console.log(`   - Customers:  ${await prisma.customer.count()}`);
-    console.log(`   - Orders:     ${await prisma.order.count()}`);
-    console.log(`   - OrderItems: ${await prisma.orderItem.count()}`);
+    console.log(`   - Categories:      ${await prisma.category.count()}`);
+    console.log(`   - Products:        ${await prisma.product.count()}`);
+    console.log(`   - ProductVariants: ${await prisma.productVariant.count()}`);
+    console.log(`   - Customers:       ${await prisma.customer.count()}`);
+    console.log(`   - Orders:          ${await prisma.order.count()}`);
+    console.log(`   - OrderItems:      ${await prisma.orderItem.count()}`);
     console.log(`====================================================\n`);
 
     process.exit(0);
@@ -526,4 +701,3 @@ async function seedDatabase() {
 }
 
 seedDatabase();
-

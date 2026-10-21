@@ -31,6 +31,7 @@ async function checkConnection() {
 
     const categoriesCount = await prisma.category.count();
     const productsCount = await prisma.product.count();
+    const variantsCount = await prisma.productVariant.count();
     const ordersCount = await prisma.order.count();
     const customersCount = await prisma.customer.count();
 
@@ -45,10 +46,11 @@ async function checkConnection() {
     console.log(`🐘 Engine: ${rawResult[0].pg_version.split(' on ')[0]}`);
     console.log(`🕒 Database Clock: ${rawResult[0].server_time.toISOString()}`);
     console.log('📊 Synchronized Table Records:');
-    console.log(`   - Customers:  ${customersCount}`);
-    console.log(`   - Categories: ${categoriesCount}`);
-    console.log(`   - Products:   ${productsCount}`);
-    console.log(`   - Orders:     ${ordersCount}`);
+    console.log(`   - Customers:       ${customersCount}`);
+    console.log(`   - Categories:      ${categoriesCount}`);
+    console.log(`   - Products:        ${productsCount}`);
+    console.log(`   - ProductVariants: ${variantsCount}`);
+    console.log(`   - Orders:          ${ordersCount}`);
     console.log('--------------------------------------------------');
   } catch (error) {
     console.error('❌ Connection Failed:', error.message);
