@@ -2,6 +2,7 @@
 
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import crypto from 'crypto';
 import { pipeline } from 'stream/promises';
 import { getSupabaseAdmin, getSupabase } from '../../bootstrap/supabase.js';
@@ -24,13 +25,28 @@ const MIME_TO_EXT = {
 
 export class ImageService {
   constructor() {
-    this.uploadDir = path.resolve(process.cwd(), 'public', 'uploads', 'products');
+    this.uploadDir = process.env.VERCEL
+      ? path.join(os.tmpdir(), 'uploads', 'products')
+      : path.resolve(process.cwd(), 'public', 'uploads', 'products');
     this.ensureDirectoryExists(this.uploadDir);
   }
 
   ensureDirectoryExists(dir) {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    } catch (err) {
+      // In serverless / read-only filesystem environments (e.g. AWS Lambda / Vercel /var/task), fallback to os.tmpdir()
+      const fallback = path.join(os.tmpdir(), 'uploads', 'products');
+      try {
+        if (!fs.existsSync(fallback)) {
+          fs.mkdirSync(fallback, { recursive: true });
+        }
+        this.uploadDir = fallback;
+      } catch {
+        // Never allow directory creation errors to crash cold start
+      }
     }
   }
 
@@ -64,7 +80,7 @@ export class ImageService {
     const safeFilename = this.generateFilename(filename, mimetype);
     const localFilePath = path.join(this.uploadDir, safeFilename);
 
-    // Save to local public/uploads/products/
+    // Save to local public/uploads/products/ (or os.tmpdir() on serverless)
     await pipeline(fileStream, fs.createWriteStream(localFilePath));
 
     const localRelativeUrl = `/uploads/products/${safeFilename}`;
@@ -122,6 +138,7 @@ export class ImageService {
     const base64Content = matches[2];
     this.validateMimeType(mimetype);
 
+    this.ensureDirectoryExists(this.uploadDir);
     const buffer = Buffer.from(base64Content, 'base64');
     const safeFilename = this.generateFilename(filenameHint, mimetype);
     const localFilePath = path.join(this.uploadDir, safeFilename);
@@ -136,4 +153,3 @@ export class ImageService {
 }
 
 export const imageService = new ImageService();
-
