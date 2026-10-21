@@ -35,6 +35,8 @@ model Product {
   weave        String?     // e.g. Banarasi, Kanjeevaram, Handloom, Zari
   color        String?     // Primary saree color
   blousePiece  Boolean     @default(true) // Unstitched blouse piece included
+  imageUrl     String?     // Primary saree display image URL
+  images       String[]    @default([]) // Saree gallery image URLs
   tags         String?     // Stored as JSON string or comma-separated
   status       String      @default("active") // "active" | "archived"
   orderItems   OrderItem[]
@@ -83,4 +85,3 @@ model OrderItem {
   itemTotal   Float
   createdAt   DateTime @default(now())
 }
-

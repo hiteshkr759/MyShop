@@ -38,7 +38,8 @@ const customerResponseSchema = {
                     name: { type: 'string' },
                     sellingPrice: { type: 'number' },
                     color: { type: 'string', nullable: true },
-                    fabric: { type: 'string', nullable: true }
+                    fabric: { type: 'string', nullable: true },
+                    imageUrl: { type: 'string', nullable: true }
                   }
                 }
               }

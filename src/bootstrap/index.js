@@ -91,6 +91,8 @@ async function seedInitialData(app) {
             weave: prod.weave || null,
             color: prod.color || null,
             blousePiece: prod.blousePiece !== undefined ? prod.blousePiece : true,
+            imageUrl: prod.imageUrl || null,
+            images: Array.isArray(prod.images) ? prod.images : (prod.imageUrl ? [prod.imageUrl] : []),
             description: prod.description,
             tags: Array.isArray(prod.tags) ? prod.tags.join(',') : (prod.tags || ''),
             status: 'active'

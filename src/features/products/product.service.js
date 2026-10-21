@@ -19,7 +19,7 @@ export function calculateProfit(sellingPrice, costPrice) {
 }
 
 /**
- * Enriches product entity with calculated profit and unified price fields
+ * Enriches product entity with calculated profit, unified price fields, and image arrays
  */
 export function enrichProduct(product) {
   if (!product) return null;
@@ -29,12 +29,17 @@ export function enrichProduct(product) {
   const costPrice = Number(product.costPrice || 0);
   const profit = calculateProfit(sellingPrice, costPrice);
 
+  const images = Array.isArray(product.images) ? product.images : [];
+  const imageUrl = product.imageUrl || (images.length > 0 ? images[0] : null);
+
   return {
     ...product,
     costPrice,
     sellingPrice,
     profit,
-    price: sellingPrice
+    price: sellingPrice,
+    imageUrl,
+    images
   };
 }
 
@@ -43,43 +48,64 @@ export class ProductService {
     this.db = db || getDatabase();
   }
 
-  async getProducts(filters = {}) {
-    const {
-      search,
-      categoryId,
-      fabric,
-      weave,
-      color,
-      minPrice,
-      maxPrice,
-      minSellingPrice,
-      maxSellingPrice,
-      minCostPrice,
-      maxCostPrice
-    } = filters;
+  /**
+   * Fetches paginated and filtered saree products
+   */
+  async getProducts(query = {}) {
+    const page = Math.max(1, parseInt(query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 10));
+    const skip = (page - 1) * limit;
 
-    const where = {
-      deletedAt: null
-    };
+    const where = {};
 
-    if (categoryId) {
-      where.categoryId = categoryId;
+    // Status filtering:
+    // - status='active': only active products
+    // - status='archived': only archived products (including soft-archived items)
+    // - status='all' or omitted (default): return BOTH active and archived products (archived sorted last)
+    if (query.status === 'active') {
+      where.status = 'active';
+      where.deletedAt = null;
+    } else if (query.status === 'archived') {
+      where.status = 'archived';
+    } else if (query.status && query.status !== 'all') {
+      where.status = query.status;
+    } else {
+      where.status = { in: ['active', 'archived'] };
     }
 
-    if (fabric) {
-      where.fabric = { contains: fabric, mode: 'insensitive' };
+    // Category filters
+    if (query.categoryId) {
+      where.categoryId = query.categoryId;
+    }
+    if (query.category) {
+      where.category = {
+        name: { contains: query.category, mode: 'insensitive' }
+      };
     }
 
-    if (weave) {
-      where.weave = { contains: weave, mode: 'insensitive' };
+    // Saree attribute filters
+    if (query.fabric) {
+      where.fabric = { contains: query.fabric, mode: 'insensitive' };
+    }
+    if (query.weave) {
+      where.weave = { contains: query.weave, mode: 'insensitive' };
+    }
+    if (query.color) {
+      where.color = { contains: query.color, mode: 'insensitive' };
     }
 
-    if (color) {
-      where.color = { contains: color, mode: 'insensitive' };
+    if (query.blousePiece !== undefined) {
+      where.blousePiece = query.blousePiece === 'true' || query.blousePiece === true;
     }
 
-    const effectiveMinSelling = minSellingPrice !== undefined ? minSellingPrice : minPrice;
-    const effectiveMaxSelling = maxSellingPrice !== undefined ? maxSellingPrice : maxPrice;
+    if (query.inStock !== undefined) {
+      const inStock = query.inStock === 'true' || query.inStock === true;
+      where.stock = inStock ? { gt: 0 } : { equals: 0 };
+    }
+
+    // Price range filters
+    const effectiveMinSelling = query.minSellingPrice !== undefined ? query.minSellingPrice : query.minPrice;
+    const effectiveMaxSelling = query.maxSellingPrice !== undefined ? query.maxSellingPrice : query.maxPrice;
 
     if (effectiveMinSelling !== undefined || effectiveMaxSelling !== undefined) {
       where.sellingPrice = {};
@@ -91,41 +117,90 @@ export class ProductService {
       }
     }
 
-    if (minCostPrice !== undefined || maxCostPrice !== undefined) {
+    if (query.minCostPrice !== undefined || query.maxCostPrice !== undefined) {
       where.costPrice = {};
-      if (minCostPrice !== undefined && !isNaN(minCostPrice)) {
-        where.costPrice.gte = Number(minCostPrice);
+      if (query.minCostPrice !== undefined && !isNaN(query.minCostPrice)) {
+        where.costPrice.gte = Number(query.minCostPrice);
       }
-      if (maxCostPrice !== undefined && !isNaN(maxCostPrice)) {
-        where.costPrice.lte = Number(maxCostPrice);
+      if (query.maxCostPrice !== undefined && !isNaN(query.maxCostPrice)) {
+        where.costPrice.lte = Number(query.maxCostPrice);
       }
     }
 
-    if (search) {
+    // Text search query across all product attributes
+    const searchQuery = query.search || query.q;
+    if (searchQuery) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { contains: search, mode: 'insensitive' } },
-        { fabric: { contains: search, mode: 'insensitive' } },
-        { weave: { contains: search, mode: 'insensitive' } },
-        { color: { contains: search, mode: 'insensitive' } }
+        { name: { contains: searchQuery, mode: 'insensitive' } },
+        { description: { contains: searchQuery, mode: 'insensitive' } },
+        { tags: { contains: searchQuery, mode: 'insensitive' } },
+        { fabric: { contains: searchQuery, mode: 'insensitive' } },
+        { weave: { contains: searchQuery, mode: 'insensitive' } },
+        { color: { contains: searchQuery, mode: 'insensitive' } },
+        { category: { name: { contains: searchQuery, mode: 'insensitive' } } }
       ];
     }
 
-    const products = await this.db.product.findMany({
-      where,
-      include: {
-        category: true
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    // Sort options: By default, active products first and archived products last ('status: asc'), with 'createdAt: desc'
+    let orderBy = [{ status: 'asc' }, { createdAt: 'desc' }];
+    switch (query.sortBy) {
+      case 'price_asc':
+        orderBy = [{ status: 'asc' }, { sellingPrice: 'asc' }, { createdAt: 'desc' }];
+        break;
+      case 'price_desc':
+        orderBy = [{ status: 'asc' }, { sellingPrice: 'desc' }, { createdAt: 'desc' }];
+        break;
+      case 'oldest':
+        orderBy = [{ status: 'asc' }, { createdAt: 'asc' }];
+        break;
+      case 'name_asc':
+        orderBy = [{ status: 'asc' }, { name: 'asc' }, { createdAt: 'desc' }];
+        break;
+      case 'name_desc':
+        orderBy = [{ status: 'asc' }, { name: 'desc' }, { createdAt: 'desc' }];
+        break;
+      case 'stock_desc':
+        orderBy = [{ status: 'asc' }, { stock: 'desc' }, { createdAt: 'desc' }];
+        break;
+      case 'stock_asc':
+        orderBy = [{ status: 'asc' }, { stock: 'asc' }, { createdAt: 'desc' }];
+        break;
+      case 'newest':
+      default:
+        orderBy = [{ status: 'asc' }, { createdAt: 'desc' }];
+    }
 
-    return products.map(enrichProduct);
+    const [total, products] = await Promise.all([
+      this.db.product.count({ where }),
+      this.db.product.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          category: true
+        },
+        orderBy
+      })
+    ]);
+
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return {
+      products: products.map(enrichProduct),
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    };
   }
 
   async getProductById(id) {
     const product = await this.db.product.findFirst({
-      where: { id, deletedAt: null },
+      where: { id },
       include: {
         category: true
       }
@@ -142,7 +217,6 @@ export class ProductService {
       costPrice = Number(data.costPrice);
       sellingPrice = calculateSellingPrice(costPrice);
     } else if (data.price !== undefined && data.price !== null && !isNaN(data.price)) {
-      // Legacy backwards-compatibility
       sellingPrice = Number(data.price);
       costPrice = Number((sellingPrice / 1.65).toFixed(2));
     } else if (data.sellingPrice !== undefined && data.sellingPrice !== null && !isNaN(data.sellingPrice)) {
@@ -150,20 +224,27 @@ export class ProductService {
       costPrice = Number((sellingPrice / 1.65).toFixed(2));
     }
 
+    const images = Array.isArray(data.images)
+      ? data.images
+      : (data.imageUrl ? [data.imageUrl] : []);
+    const imageUrl = data.imageUrl || (images.length > 0 ? images[0] : null);
+
     const created = await this.db.product.create({
       data: {
         name: data.name,
         categoryId: data.categoryId,
         costPrice,
         sellingPrice,
-        price: sellingPrice, // Synchronized with sellingPrice for backward compatibility
+        price: sellingPrice,
         stock: data.stock !== undefined ? Number(data.stock) : 1,
         fabric: data.fabric || null,
         weave: data.weave || null,
         color: data.color || null,
         blousePiece: data.blousePiece !== undefined ? Boolean(data.blousePiece) : true,
+        imageUrl,
+        images,
         description: data.description || '',
-        tags: data.tags || '',
+        tags: Array.isArray(data.tags) ? data.tags.join(',') : (data.tags || ''),
         status: data.status || 'active'
       },
       include: {
@@ -184,7 +265,6 @@ export class ProductService {
 
     if (data.costPrice !== undefined && data.costPrice !== null) {
       data.costPrice = Number(data.costPrice);
-      // Mandatory business rule: Selling Price is always Cost Price + 65% markup
       data.sellingPrice = calculateSellingPrice(data.costPrice);
       data.price = data.sellingPrice;
     } else if (data.sellingPrice !== undefined && data.sellingPrice !== null) {
@@ -200,6 +280,12 @@ export class ProductService {
     if (data.stock !== undefined) data.stock = Number(data.stock);
     if (data.blousePiece !== undefined) data.blousePiece = Boolean(data.blousePiece);
 
+    if (data.images !== undefined && Array.isArray(data.images)) {
+      if (!data.imageUrl && data.images.length > 0) {
+        data.imageUrl = data.images[0];
+      }
+    }
+
     const updated = await this.db.product.update({
       where: { id },
       data,
@@ -211,10 +297,38 @@ export class ProductService {
     return enrichProduct(updated);
   }
 
+  /**
+   * Appends an image to product gallery and optionally sets it as cover image
+   */
+  async addProductImage(id, imageUrl, isCover = false) {
+    const existing = await this.db.product.findFirst({
+      where: { id, deletedAt: null }
+    });
+    if (!existing) return null;
+
+    const currentImages = Array.isArray(existing.images) ? [...existing.images] : [];
+    if (!currentImages.includes(imageUrl)) {
+      currentImages.push(imageUrl);
+    }
+
+    const updated = await this.db.product.update({
+      where: { id },
+      data: {
+        imageUrl: isCover || !existing.imageUrl ? imageUrl : existing.imageUrl,
+        images: currentImages
+      },
+      include: {
+        category: true
+      }
+    });
+
+    return enrichProduct(updated);
+  }
+
   // Soft-archive product respecting zero-deletion policy
   async archiveProduct(id) {
     const existing = await this.db.product.findFirst({
-      where: { id, deletedAt: null }
+      where: { id }
     });
     if (!existing) return null;
 
@@ -230,6 +344,27 @@ export class ProductService {
     });
 
     return enrichProduct(archived);
+  }
+
+  // Restores an archived product back to active status
+  async unarchiveProduct(id) {
+    const existing = await this.db.product.findFirst({
+      where: { id }
+    });
+    if (!existing) return null;
+
+    const unarchived = await this.db.product.update({
+      where: { id },
+      data: {
+        status: 'active',
+        deletedAt: null
+      },
+      include: {
+        category: true
+      }
+    });
+
+    return enrichProduct(unarchived);
   }
 }
 

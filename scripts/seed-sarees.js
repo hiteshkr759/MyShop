@@ -37,7 +37,11 @@ async function seedSarees() {
         fabric: prod.fabric || null,
         weave: prod.weave || null,
         color: prod.color || null,
-        blousePiece: prod.blousePiece !== undefined ? prod.blousePiece : true
+        blousePiece: prod.blousePiece !== undefined ? prod.blousePiece : true,
+        imageUrl: prod.imageUrl || null,
+        images: Array.isArray(prod.images) ? prod.images : (prod.imageUrl ? [prod.imageUrl] : []),
+        status: 'active',
+        deletedAt: null
       },
       create: {
         id: prod.id,
@@ -51,6 +55,10 @@ async function seedSarees() {
         weave: prod.weave || null,
         color: prod.color || null,
         blousePiece: prod.blousePiece !== undefined ? prod.blousePiece : true,
+        imageUrl: prod.imageUrl || null,
+        images: Array.isArray(prod.images) ? prod.images : (prod.imageUrl ? [prod.imageUrl] : []),
+        status: 'active',
+        deletedAt: null,
         description: prod.description || '',
         tags: Array.isArray(prod.tags) ? prod.tags.join(',') : (prod.tags || ''),
         status: 'active'

@@ -69,6 +69,8 @@ export const initialProducts = [
     weave: 'Banarasi Kadwa',
     color: 'Crimson Red & Antique Gold',
     blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'],
     description: 'Handwoven pure katan silk saree adorned with intricate floral zari jaal and regal pallu.',
     tags: ['silk', 'banarasi', 'handloom', 'bridal', 'wedding']
   },
@@ -84,6 +86,8 @@ export const initialProducts = [
     weave: 'Kanjeevaram Korvai',
     color: 'Peacock Blue & Magenta',
     blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'],
     description: 'Authentic Kanchipuram silk saree with contrasting korvai border and pure gold zari motifs.',
     tags: ['silk', 'kanjeevaram', 'temple-border', 'bridal']
   },
@@ -99,6 +103,8 @@ export const initialProducts = [
     weave: 'Chanderi Handloom',
     color: 'Mint Green & Silver',
     blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'],
     description: 'Lightweight and sheer Chanderi handloom saree featuring silver zari booti and soft drape.',
     tags: ['cotton-silk', 'chanderi', 'handloom', 'summer-wear']
   },
@@ -114,6 +120,8 @@ export const initialProducts = [
     weave: 'Embroidered',
     color: 'Pastel Lavender',
     blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'],
     description: 'Contemporary pastel organza saree featuring delicate floral thread embroidery and scalloped border.',
     tags: ['organza', 'party-wear', 'pastel', 'designer']
   }
