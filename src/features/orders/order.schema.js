@@ -15,14 +15,28 @@ const orderResponseSchema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
+    customerId: { type: 'string', nullable: true },
     customerName: { type: 'string' },
-    customerEmail: { type: 'string' },
+    customerEmail: { type: 'string', nullable: true },
     customerPhone: { type: 'string', nullable: true },
+    deliveryAddress: { type: 'string', nullable: true },
+    deliveryArea: { type: 'string', nullable: true },
     totalAmount: { type: 'number' },
     status: { type: 'string' },
     items: {
       type: 'array',
       items: orderItemResponseSchema
+    },
+    customer: {
+      type: 'object',
+      nullable: true,
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        phoneNumber: { type: 'string' },
+        address: { type: 'string', nullable: true },
+        area: { type: 'string', nullable: true }
+      }
     },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' }
@@ -81,7 +95,7 @@ export const getOrderByIdSchema = {
 };
 
 export const createOrderSchema = {
-  description: 'Place an order with atomic stock validation and deduction',
+  description: 'Place an order with atomic stock validation and customer identification by phone',
   tags: ['Orders'],
   body: {
     type: 'object',
@@ -89,11 +103,13 @@ export const createOrderSchema = {
     properties: {
       customer: {
         type: 'object',
-        required: ['name', 'email'],
+        required: ['name', 'phone'],
         properties: {
           name: { type: 'string', minLength: 2 },
+          phone: { type: 'string', minLength: 7, maxLength: 20 },
           email: { type: 'string', format: 'email' },
-          phone: { type: 'string' }
+          address: { type: 'string' },
+          area: { type: 'string' }
         }
       },
       items: {

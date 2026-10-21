@@ -35,6 +35,8 @@ model Product {
   weave        String?     // e.g. Banarasi, Kanjeevaram, Handloom, Zari
   color        String?     // Primary saree color
   blousePiece  Boolean     @default(true) // Unstitched blouse piece included
+  imageUrl     String?     // Primary saree display image URL
+  images       String[]    @default([]) // Saree gallery image URLs
   tags         String?     // Stored as JSON string or comma-separated
   status       String      @default("active") // "active" | "archived"
   orderItems   OrderItem[]
@@ -43,17 +45,33 @@ model Product {
   deletedAt    DateTime?   // Soft-deletion directive
 }
 
-model Order {
+model Customer {
   id          String      @id @default(uuid())
-  customerName String
-  customerEmail String
-  customerPhone String?
-  totalAmount Float
-  status      String      @default("confirmed")
-  items       OrderItem[]
+  name        String
+  phoneNumber String      @unique
+  address     String?
+  area        String?
+  orders      Order[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?   // Soft-deletion directive
+  deletedAt   DateTime?   // Soft-deletion directive (never hard delete)
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  customerId      String?
+  customer        Customer?   @relation(fields: [customerId], references: [id])
+  customerName    String
+  customerEmail   String?
+  customerPhone   String?
+  deliveryAddress String?
+  deliveryArea    String?
+  totalAmount     Float
+  status          String      @default("confirmed")
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft-deletion directive
 }
 
 model OrderItem {
@@ -67,4 +85,3 @@ model OrderItem {
   itemTotal   Float
   createdAt   DateTime @default(now())
 }
-

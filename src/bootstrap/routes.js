@@ -5,6 +5,7 @@ import healthRoutes from '../features/health/health.routes.js';
 import categoryRoutes from '../features/categories/category.routes.js';
 import productRoutes from '../features/products/product.routes.js';
 import orderRoutes from '../features/orders/order.routes.js';
+import customerRoutes from '../features/customers/customer.routes.js';
 
 /**
  * Registers all feature routes under the configured API prefix
@@ -21,6 +22,7 @@ export async function initRoutes(app) {
         health: `${config.apiPrefix}/health`,
         products: `${config.apiPrefix}/products`,
         categories: `${config.apiPrefix}/categories`,
+        customers: `${config.apiPrefix}/customers`,
         orders: `${config.apiPrefix}/orders`
       },
       version: '1.0.0'
@@ -38,6 +40,7 @@ export async function initRoutes(app) {
     await api.register(healthRoutes, { prefix: '/health' });
     await api.register(categoryRoutes, { prefix: '/categories' });
     await api.register(productRoutes, { prefix: '/products' });
+    await api.register(customerRoutes, { prefix: '/customers' });
     await api.register(orderRoutes, { prefix: '/orders' });
   }, { prefix: config.apiPrefix });
 

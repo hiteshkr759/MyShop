@@ -39,3 +39,11 @@
 - **Migrations & Schemas**: Schema modifications must be additive only; dropping columns, tables, or constraints is strictly forbidden.
 - **Service Role Key Isolation**: The Supabase Service Role Key must never be committed to source control or exposed to the client bundle. Only utilize the anonymous key (`anon`) on public surfaces.
 - **Data Retention**: Deletes on database entities must be implemented as soft-deletes (`deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL`) rather than hard SQL `DELETE` statements.
+
+### 7. Git Workflow & PR-Only Merge Directive
+- **Strict Pull Request Policy**: Direct pushes and direct local merges into `dev` and `master` are strictly forbidden.
+- All code changes must originate on an isolated `feature/<feature-name>` branch branched off `dev`.
+- Merging into `dev` must be executed exclusively via GitHub Pull Requests (`feature/<name>` → `dev`).
+- Merging `dev` into `master` must be executed exclusively via GitHub Pull Requests (`dev` → `master`).
+- GitHub CLI (`gh`) is authorized and configured for programmatic PR creation and management.
+
