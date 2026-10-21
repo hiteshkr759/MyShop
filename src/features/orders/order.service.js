@@ -14,7 +14,7 @@ export class OrderService {
       include: {
         customer: true,
         items: {
-          include: { product: true }
+          include: { product: true, variant: true }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -27,7 +27,7 @@ export class OrderService {
       include: {
         customer: true,
         items: {
-          include: { product: true }
+          include: { product: true, variant: true }
         }
       }
     });
@@ -50,17 +50,52 @@ export class OrderService {
           throw new Error(`Product '${item.productId}' not found or inactive`);
         }
 
-        if (product.stock < item.quantity) {
-          throw new Error(`Insufficient stock for product '${product.name}' (Available: ${product.stock}, Requested: ${item.quantity})`);
+        let variant = null;
+        let unitPrice = product.sellingPrice || product.price || 0;
+        let colorName = product.color || null;
+
+        // If specific color variant is requested
+        if (item.variantId) {
+          variant = await tx.productVariant.findFirst({
+            where: { id: item.variantId, productId: product.id, deletedAt: null }
+          });
+
+          if (!variant) {
+            throw new Error(`Color variant '${item.variantId}' not found on product '${product.name}'`);
+          }
+
+          if (variant.stock < item.quantity) {
+            throw new Error(`Insufficient stock for color '${variant.colorName}' on product '${product.name}' (Available: ${variant.stock}, Requested: ${item.quantity})`);
+          }
+
+          // Deduct variant stock atomically
+          const updatedVariant = await tx.productVariant.update({
+            where: { id: variant.id },
+            data: {
+              stock: { decrement: item.quantity }
+            }
+          });
+
+          if (updatedVariant.stock < 0) {
+            throw new Error(`Stock deduction violation: stock cannot be negative for '${variant.colorName}'`);
+          }
+
+          colorName = variant.colorName;
+          if (variant.sellingPrice) {
+            unitPrice = variant.sellingPrice;
+          }
+        } else {
+          // General product stock check
+          if (product.stock < item.quantity) {
+            throw new Error(`Insufficient stock for product '${product.name}' (Available: ${product.stock}, Requested: ${item.quantity})`);
+          }
         }
 
-        // Deduct inventory atomically - ensure stock never drops below 0
+        // Deduct overall product stock atomically
         const updatedProduct = await tx.product.update({
           where: { id: product.id },
           data: {
-            stock: {
-              decrement: item.quantity
-            }
+            stock: { decrement: item.quantity }
           }
         });
 
@@ -68,12 +103,13 @@ export class OrderService {
           throw new Error(`Stock deduction violation: stock cannot be negative for '${product.name}'`);
         }
 
-        const unitPrice = product.sellingPrice || product.price || 0;
         const itemTotal = Number((unitPrice * item.quantity).toFixed(2));
         calculatedTotal += itemTotal;
 
         orderItemsData.push({
           productId: product.id,
+          variantId: variant ? variant.id : null,
+          colorName,
           quantity: item.quantity,
           unitPrice,
           itemTotal
@@ -108,7 +144,7 @@ export class OrderService {
         },
         include: {
           items: {
-            include: { product: true }
+            include: { product: true, variant: true }
           },
           customer: true
         }
@@ -120,4 +156,3 @@ export class OrderService {
 }
 
 export const orderService = new OrderService();
-

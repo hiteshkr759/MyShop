@@ -19,7 +19,20 @@ export function calculateProfit(sellingPrice, costPrice) {
 }
 
 /**
- * Enriches product entity with calculated profit, unified price fields, and image arrays
+ * Enriches product variant entity
+ */
+export function enrichVariant(variant) {
+  if (!variant) return null;
+  const images = Array.isArray(variant.images) ? variant.images : [];
+  return {
+    ...variant,
+    stock: Number(variant.stock || 0),
+    images
+  };
+}
+
+/**
+ * Enriches product entity with calculated profit, unified price fields, color variants, and image arrays
  */
 export function enrichProduct(product) {
   if (!product) return null;
@@ -29,8 +42,25 @@ export function enrichProduct(product) {
   const costPrice = Number(product.costPrice || 0);
   const profit = calculateProfit(sellingPrice, costPrice);
 
+  const rawVariants = Array.isArray(product.variants) ? product.variants : [];
+  const variants = rawVariants.map(enrichVariant);
+
+  // Compute total stock from active variants if variants exist
+  const activeVariants = variants.filter(v => !v.deletedAt && v.status === 'active');
+  const totalStock = activeVariants.length > 0
+    ? activeVariants.reduce((sum, v) => sum + v.stock, 0)
+    : Number(product.stock || 0);
+
   const images = Array.isArray(product.images) ? product.images : [];
-  const imageUrl = product.imageUrl || (images.length > 0 ? images[0] : null);
+
+  // If no parent image, fallback to default variant's first image or first variant's image
+  let imageUrl = product.imageUrl || (images.length > 0 ? images[0] : null);
+  if (!imageUrl && activeVariants.length > 0) {
+    const defaultVar = activeVariants.find(v => v.isDefault) || activeVariants[0];
+    if (defaultVar && defaultVar.images.length > 0) {
+      imageUrl = defaultVar.images[0];
+    }
+  }
 
   return {
     ...product,
@@ -38,8 +68,11 @@ export function enrichProduct(product) {
     sellingPrice,
     profit,
     price: sellingPrice,
+    stock: Number(product.stock || 0),
+    totalStock,
     imageUrl,
-    images
+    images,
+    variants
   };
 }
 
@@ -49,7 +82,7 @@ export class ProductService {
   }
 
   /**
-   * Fetches paginated and filtered saree products
+   * Fetches paginated and filtered saree products including color variants
    */
   async getProducts(query = {}) {
     const page = Math.max(1, parseInt(query.page, 10) || 1);
@@ -59,9 +92,6 @@ export class ProductService {
     const where = {};
 
     // Status filtering:
-    // - status='active': only active products
-    // - status='archived': only archived products (including soft-archived items)
-    // - status='all' or omitted (default): return BOTH active and archived products (archived sorted last)
     if (query.status === 'active') {
       where.status = 'active';
       where.deletedAt = null;
@@ -90,8 +120,20 @@ export class ProductService {
     if (query.weave) {
       where.weave = { contains: query.weave, mode: 'insensitive' };
     }
+
+    // Color filter checks both parent color and nested active variant colorNames
     if (query.color) {
-      where.color = { contains: query.color, mode: 'insensitive' };
+      where.OR = [
+        { color: { contains: query.color, mode: 'insensitive' } },
+        {
+          variants: {
+            some: {
+              colorName: { contains: query.color, mode: 'insensitive' },
+              deletedAt: null
+            }
+          }
+        }
+      ];
     }
 
     if (query.blousePiece !== undefined) {
@@ -100,7 +142,17 @@ export class ProductService {
 
     if (query.inStock !== undefined) {
       const inStock = query.inStock === 'true' || query.inStock === true;
-      where.stock = inStock ? { gt: 0 } : { equals: 0 };
+      if (inStock) {
+        where.OR = [
+          { stock: { gt: 0 } },
+          { variants: { some: { stock: { gt: 0 }, deletedAt: null } } }
+        ];
+      } else {
+        where.AND = [
+          { stock: { equals: 0 } },
+          { variants: { none: { stock: { gt: 0 }, deletedAt: null } } }
+        ];
+      }
     }
 
     // Price range filters
@@ -127,7 +179,7 @@ export class ProductService {
       }
     }
 
-    // Text search query across all product attributes
+    // Text search query across all product attributes and variant colors
     const searchQuery = query.search || query.q;
     if (searchQuery) {
       where.OR = [
@@ -137,6 +189,14 @@ export class ProductService {
         { fabric: { contains: searchQuery, mode: 'insensitive' } },
         { weave: { contains: searchQuery, mode: 'insensitive' } },
         { color: { contains: searchQuery, mode: 'insensitive' } },
+        {
+          variants: {
+            some: {
+              colorName: { contains: searchQuery, mode: 'insensitive' },
+              deletedAt: null
+            }
+          }
+        },
         { category: { name: { contains: searchQuery, mode: 'insensitive' } } }
       ];
     }
@@ -177,7 +237,11 @@ export class ProductService {
         skip,
         take: limit,
         include: {
-          category: true
+          category: true,
+          variants: {
+            where: { deletedAt: null },
+            orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+          }
         },
         orderBy
       })
@@ -202,13 +266,20 @@ export class ProductService {
     const product = await this.db.product.findFirst({
       where: { id },
       include: {
-        category: true
+        category: true,
+        variants: {
+          where: { deletedAt: null },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+        }
       }
     });
 
     return enrichProduct(product);
   }
 
+  /**
+   * Creates a product, optionally with nested color variants
+   */
   async createProduct(data) {
     let costPrice = 0;
     let sellingPrice = 0;
@@ -229,30 +300,65 @@ export class ProductService {
       : (data.imageUrl ? [data.imageUrl] : []);
     const imageUrl = data.imageUrl || (images.length > 0 ? images[0] : null);
 
-    const created = await this.db.product.create({
-      data: {
-        name: data.name,
-        categoryId: data.categoryId,
-        costPrice,
-        sellingPrice,
-        price: sellingPrice,
-        stock: data.stock !== undefined ? Number(data.stock) : 1,
-        fabric: data.fabric || null,
-        weave: data.weave || null,
-        color: data.color || null,
-        blousePiece: data.blousePiece !== undefined ? Boolean(data.blousePiece) : true,
-        imageUrl,
-        images,
-        description: data.description || '',
-        tags: Array.isArray(data.tags) ? data.tags.join(',') : (data.tags || ''),
-        status: data.status || 'active'
-      },
-      include: {
-        category: true
-      }
-    });
+    const variants = Array.isArray(data.variants) ? data.variants : [];
+    const totalVariantStock = variants.reduce((sum, v) => sum + (Number(v.stock) || 1), 0);
+    const stock = data.stock !== undefined
+      ? Number(data.stock)
+      : (variants.length > 0 ? totalVariantStock : 1);
 
-    return enrichProduct(created);
+    return this.db.$transaction(async (tx) => {
+      const created = await tx.product.create({
+        data: {
+          name: data.name,
+          categoryId: data.categoryId,
+          costPrice,
+          sellingPrice,
+          price: sellingPrice,
+          stock,
+          fabric: data.fabric || null,
+          weave: data.weave || null,
+          color: data.color || (variants[0]?.colorName || null),
+          blousePiece: data.blousePiece !== undefined ? Boolean(data.blousePiece) : true,
+          imageUrl,
+          images,
+          description: data.description || '',
+          tags: Array.isArray(data.tags) ? data.tags.join(',') : (data.tags || ''),
+          status: data.status || 'active'
+        }
+      });
+
+      if (variants.length > 0) {
+        for (let i = 0; i < variants.length; i++) {
+          const v = variants[i];
+          const varImages = Array.isArray(v.images) ? v.images : [];
+          await tx.productVariant.create({
+            data: {
+              productId: created.id,
+              colorName: v.colorName,
+              colorCode: v.colorCode || null,
+              stock: v.stock !== undefined ? Number(v.stock) : 1,
+              costPrice: v.costPrice !== undefined ? Number(v.costPrice) : null,
+              sellingPrice: v.sellingPrice !== undefined ? Number(v.sellingPrice) : null,
+              images: varImages,
+              isDefault: v.isDefault !== undefined ? Boolean(v.isDefault) : (i === 0)
+            }
+          });
+        }
+      }
+
+      const fullProduct = await tx.product.findUnique({
+        where: { id: created.id },
+        include: {
+          category: true,
+          variants: {
+            where: { deletedAt: null },
+            orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+          }
+        }
+      });
+
+      return enrichProduct(fullProduct);
+    });
   }
 
   async updateProduct(id, updates) {
@@ -286,11 +392,18 @@ export class ProductService {
       }
     }
 
+    // Do not pass raw variants into product.update
+    delete data.variants;
+
     const updated = await this.db.product.update({
       where: { id },
       data,
       include: {
-        category: true
+        category: true,
+        variants: {
+          where: { deletedAt: null },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+        }
       }
     });
 
@@ -318,7 +431,11 @@ export class ProductService {
         images: currentImages
       },
       include: {
-        category: true
+        category: true,
+        variants: {
+          where: { deletedAt: null },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+        }
       }
     });
 
@@ -339,7 +456,11 @@ export class ProductService {
         deletedAt: new Date()
       },
       include: {
-        category: true
+        category: true,
+        variants: {
+          where: { deletedAt: null },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+        }
       }
     });
 
@@ -360,11 +481,210 @@ export class ProductService {
         deletedAt: null
       },
       include: {
-        category: true
+        category: true,
+        variants: {
+          where: { deletedAt: null },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+        }
       }
     });
 
     return enrichProduct(unarchived);
+  }
+
+  // ==========================================
+  // COLOR VARIANT MANAGEMENT METHODS
+  // ==========================================
+
+  /**
+   * Adds a new color variant to a saree product (or reactivates if previously soft-archived)
+   */
+  async addVariant(productId, variantData) {
+    const product = await this.db.product.findUnique({
+      where: { id: productId }
+    });
+    if (!product || product.deletedAt !== null) {
+      throw new Error(`Product '${productId}' not found or inactive`);
+    }
+
+    return this.db.$transaction(async (tx) => {
+      // If marking as default, reset other variants for this product
+      if (variantData.isDefault) {
+        await tx.productVariant.updateMany({
+          where: { productId },
+          data: { isDefault: false }
+        });
+      }
+
+      const images = Array.isArray(variantData.images) ? variantData.images : [];
+      const stock = variantData.stock !== undefined ? Number(variantData.stock) : 1;
+
+      // Check if variant with this colorName already exists on this product
+      const existing = await tx.productVariant.findUnique({
+        where: {
+          productId_colorName: {
+            productId,
+            colorName: variantData.colorName
+          }
+        }
+      });
+
+      let variant;
+      if (existing) {
+        if (!existing.deletedAt && existing.status === 'active') {
+          throw new Error(`Color variant '${variantData.colorName}' already exists on this product`);
+        }
+        // Reactivate soft-archived variant with new details
+        variant = await tx.productVariant.update({
+          where: { id: existing.id },
+          data: {
+            colorCode: variantData.colorCode !== undefined ? variantData.colorCode : existing.colorCode,
+            stock,
+            costPrice: variantData.costPrice !== undefined ? Number(variantData.costPrice) : existing.costPrice,
+            sellingPrice: variantData.sellingPrice !== undefined ? Number(variantData.sellingPrice) : existing.sellingPrice,
+            images: images.length > 0 ? images : existing.images,
+            isDefault: Boolean(variantData.isDefault),
+            status: 'active',
+            deletedAt: null
+          }
+        });
+      } else {
+        variant = await tx.productVariant.create({
+          data: {
+            productId,
+            colorName: variantData.colorName,
+            colorCode: variantData.colorCode || null,
+            stock,
+            costPrice: variantData.costPrice !== undefined ? Number(variantData.costPrice) : null,
+            sellingPrice: variantData.sellingPrice !== undefined ? Number(variantData.sellingPrice) : null,
+            images,
+            isDefault: Boolean(variantData.isDefault),
+            status: 'active'
+          }
+        });
+      }
+
+      // Synchronize parent product stock
+      const allActiveVariants = await tx.productVariant.findMany({
+        where: { productId, deletedAt: null, status: 'active' }
+      });
+      const newTotalStock = allActiveVariants.reduce((sum, v) => sum + v.stock, 0);
+      await tx.product.update({
+        where: { id: productId },
+        data: { stock: newTotalStock }
+      });
+
+      return enrichVariant(variant);
+    });
+  }
+
+  /**
+   * Updates an existing color variant
+   */
+  async updateVariant(productId, variantId, variantData) {
+    const existing = await this.db.productVariant.findFirst({
+      where: { id: variantId, productId, deletedAt: null }
+    });
+    if (!existing) return null;
+
+    return this.db.$transaction(async (tx) => {
+      if (variantData.isDefault) {
+        await tx.productVariant.updateMany({
+          where: { productId, id: { not: variantId } },
+          data: { isDefault: false }
+        });
+      }
+
+      const data = { ...variantData };
+      if (data.stock !== undefined) data.stock = Number(data.stock);
+      if (data.costPrice !== undefined) data.costPrice = Number(data.costPrice);
+      if (data.sellingPrice !== undefined) data.sellingPrice = Number(data.sellingPrice);
+
+      const updated = await tx.productVariant.update({
+        where: { id: variantId },
+        data
+      });
+
+      // Synchronize parent product stock if stock changed
+      if (variantData.stock !== undefined) {
+        const allActiveVariants = await tx.productVariant.findMany({
+          where: { productId, deletedAt: null, status: 'active' }
+        });
+        const newTotalStock = allActiveVariants.reduce((sum, v) => sum + v.stock, 0);
+        await tx.product.update({
+          where: { id: productId },
+          data: { stock: newTotalStock }
+        });
+      }
+
+      return enrichVariant(updated);
+    });
+  }
+
+  /**
+   * Soft-archives a color variant under Zero-Deletion policy
+   */
+  async archiveVariant(productId, variantId) {
+    const existing = await this.db.productVariant.findFirst({
+      where: { id: variantId, productId, deletedAt: null }
+    });
+    if (!existing) return null;
+
+    return this.db.$transaction(async (tx) => {
+      const archived = await tx.productVariant.update({
+        where: { id: variantId },
+        data: {
+          status: 'archived',
+          deletedAt: new Date()
+        }
+      });
+
+      // Recalculate parent stock from remaining active variants
+      const remainingVariants = await tx.productVariant.findMany({
+        where: { productId, deletedAt: null, status: 'active' }
+      });
+      const newTotalStock = remainingVariants.reduce((sum, v) => sum + v.stock, 0);
+      await tx.product.update({
+        where: { id: productId },
+        data: { stock: newTotalStock }
+      });
+
+      return enrichVariant(archived);
+    });
+  }
+
+  /**
+   * Attaches multiple photo URLs to a specific color variant
+   */
+  async addVariantImages(productId, variantId, newUrls, setCover = false) {
+    const existing = await this.db.productVariant.findFirst({
+      where: { id: variantId, productId, deletedAt: null }
+    });
+    if (!existing) return null;
+
+    const currentImages = Array.isArray(existing.images) ? [...existing.images] : [];
+    const urlsToAdd = Array.isArray(newUrls) ? newUrls : [newUrls];
+
+    let updatedImages;
+    if (setCover) {
+      // Filter out existing duplicates and prepend
+      const filtered = currentImages.filter(url => !urlsToAdd.includes(url));
+      updatedImages = [...urlsToAdd, ...filtered];
+    } else {
+      for (const url of urlsToAdd) {
+        if (!currentImages.includes(url)) {
+          currentImages.push(url);
+        }
+      }
+      updatedImages = currentImages;
+    }
+
+    const updated = await this.db.productVariant.update({
+      where: { id: variantId },
+      data: { images: updatedImages }
+    });
+
+    return enrichVariant(updated);
   }
 }
 

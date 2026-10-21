@@ -5,6 +5,8 @@ const orderItemResponseSchema = {
   properties: {
     id: { type: 'string' },
     productId: { type: 'string' },
+    variantId: { type: 'string', nullable: true },
+    colorName: { type: 'string', nullable: true },
     quantity: { type: 'integer' },
     unitPrice: { type: 'number' },
     itemTotal: { type: 'number' }
@@ -95,7 +97,7 @@ export const getOrderByIdSchema = {
 };
 
 export const createOrderSchema = {
-  description: 'Place an order with atomic stock validation and customer identification by phone',
+  description: 'Place an order with atomic stock validation, color variant tracking, and customer identification by phone',
   tags: ['Orders'],
   body: {
     type: 'object',
@@ -120,6 +122,7 @@ export const createOrderSchema = {
           required: ['productId', 'quantity'],
           properties: {
             productId: { type: 'string' },
+            variantId: { type: 'string', description: 'Optional color variant UUID' },
             quantity: { type: 'integer', minimum: 1 }
           }
         }
@@ -137,4 +140,3 @@ export const createOrderSchema = {
     }
   }
 };
-
