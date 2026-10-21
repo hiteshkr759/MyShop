@@ -12,6 +12,27 @@ const paginationSchema = {
   }
 };
 
+export const variantItemSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    productId: { type: 'string' },
+    colorName: { type: 'string' },
+    colorCode: { type: 'string', nullable: true },
+    stock: { type: 'integer' },
+    costPrice: { type: 'number', nullable: true },
+    sellingPrice: { type: 'number', nullable: true },
+    images: {
+      type: 'array',
+      items: { type: 'string' }
+    },
+    isDefault: { type: 'boolean' },
+    status: { type: 'string' },
+    createdAt: { type: 'string' },
+    updatedAt: { type: 'string' }
+  }
+};
+
 const productItemSchema = {
   type: 'object',
   properties: {
@@ -32,6 +53,7 @@ const productItemSchema = {
     profit: { type: 'number' },
     price: { type: 'number' },
     stock: { type: 'integer' },
+    totalStock: { type: 'integer' },
     fabric: { type: 'string', nullable: true },
     weave: { type: 'string', nullable: true },
     color: { type: 'string', nullable: true },
@@ -40,6 +62,10 @@ const productItemSchema = {
     images: {
       type: 'array',
       items: { type: 'string' }
+    },
+    variants: {
+      type: 'array',
+      items: variantItemSchema
     },
     description: { type: 'string', nullable: true },
     tags: { type: 'string', nullable: true },
@@ -63,7 +89,7 @@ export const getProductsSchema = {
       category: { type: 'string', description: 'Filter by Category name (e.g. Silk Sarees)' },
       fabric: { type: 'string', description: 'Filter by fabric (e.g. Pure Silk, Organza, Cotton)' },
       weave: { type: 'string', description: 'Filter by weave (e.g. Banarasi, Kanjeevaram, Handloom)' },
-      color: { type: 'string', description: 'Filter by saree color' },
+      color: { type: 'string', description: 'Filter by saree color name' },
       blousePiece: { type: 'string', description: 'Filter by blouse piece inclusion ("true" / "false")' },
       inStock: { type: 'string', description: 'Filter by stock availability ("true" / "false")' },
       minPrice: { type: 'number', description: 'Minimum retail selling price' },
@@ -98,7 +124,7 @@ export const getProductsSchema = {
 };
 
 export const getProductByIdSchema = {
-  description: 'Get single product by ID',
+  description: 'Get single product by ID with full color variants and photo galleries',
   tags: ['Products'],
   params: {
     type: 'object',
@@ -131,7 +157,7 @@ export const getProductByIdSchema = {
 };
 
 export const createProductSchema = {
-  description: 'Create a new saree product with image URL and automatic selling price calculation (SP = CP * 1.65)',
+  description: 'Create a new saree product with optional color variants, photos, and automatic selling price calculation (SP = CP * 1.65)',
   tags: ['Products'],
   body: {
     type: 'object',
@@ -152,6 +178,26 @@ export const createProductSchema = {
         type: 'array',
         items: { type: 'string' },
         description: 'Gallery image URLs'
+      },
+      variants: {
+        type: 'array',
+        description: 'Color variants with dedicated stock and photo galleries',
+        items: {
+          type: 'object',
+          required: ['colorName'],
+          properties: {
+            colorName: { type: 'string' },
+            colorCode: { type: 'string', description: 'Hex code e.g. #8B0000' },
+            stock: { type: 'integer', minimum: 0, default: 1 },
+            costPrice: { type: 'number', minimum: 0 },
+            sellingPrice: { type: 'number', minimum: 0 },
+            images: {
+              type: 'array',
+              items: { type: 'string' }
+            },
+            isDefault: { type: 'boolean', default: false }
+          }
+        }
       },
       description: { type: 'string' },
       tags: { type: 'string' }
@@ -263,6 +309,149 @@ export const unarchiveProductSchema = {
           type: 'object',
           properties: {
             message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }
+};
+
+// ==========================================
+// COLOR VARIANT SCHEMAS
+// ==========================================
+
+export const createVariantSchema = {
+  description: 'Add a new color variant to an existing saree product',
+  tags: ['Products'],
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string', description: 'Product UUID' }
+    }
+  },
+  body: {
+    type: 'object',
+    required: ['colorName'],
+    properties: {
+      colorName: { type: 'string', minLength: 1 },
+      colorCode: { type: 'string', description: 'Hex code e.g. #8B0000' },
+      stock: { type: 'integer', minimum: 0, default: 1 },
+      costPrice: { type: 'number', minimum: 0 },
+      sellingPrice: { type: 'number', minimum: 0 },
+      images: {
+        type: 'array',
+        items: { type: 'string' },
+        default: []
+      },
+      isDefault: { type: 'boolean', default: false }
+    }
+  },
+  response: {
+    201: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: variantItemSchema
+      }
+    }
+  }
+};
+
+export const updateVariantSchema = {
+  description: 'Update a specific color variant (stock, color, photos, pricing)',
+  tags: ['Products'],
+  params: {
+    type: 'object',
+    required: ['id', 'variantId'],
+    properties: {
+      id: { type: 'string', description: 'Product UUID' },
+      variantId: { type: 'string', description: 'Variant UUID' }
+    }
+  },
+  body: {
+    type: 'object',
+    properties: {
+      colorName: { type: 'string' },
+      colorCode: { type: 'string' },
+      stock: { type: 'integer', minimum: 0 },
+      costPrice: { type: 'number', minimum: 0 },
+      sellingPrice: { type: 'number', minimum: 0 },
+      images: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      isDefault: { type: 'boolean' },
+      status: { type: 'string' }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: variantItemSchema
+      }
+    }
+  }
+};
+
+export const archiveVariantSchema = {
+  description: 'Soft-archive a color variant under Zero-Deletion policy',
+  tags: ['Products'],
+  params: {
+    type: 'object',
+    required: ['id', 'variantId'],
+    properties: {
+      id: { type: 'string', description: 'Product UUID' },
+      variantId: { type: 'string', description: 'Variant UUID' }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: variantItemSchema
+      }
+    }
+  }
+};
+
+export const uploadVariantImagesSchema = {
+  description: 'Upload and attach multiple photos to a specific color variant of a saree',
+  tags: ['Products'],
+  params: {
+    type: 'object',
+    required: ['id', 'variantId'],
+    properties: {
+      id: { type: 'string', description: 'Product UUID' },
+      variantId: { type: 'string', description: 'Variant UUID' }
+    }
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      setCover: { type: 'string', description: 'Prepend uploaded image as variant cover ("true" / "false")' }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: {
+          type: 'object',
+          properties: {
+            uploadedUrls: {
+              type: 'array',
+              items: { type: 'string' }
+            },
+            variant: variantItemSchema
           }
         }
       }

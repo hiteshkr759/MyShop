@@ -4,12 +4,20 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 
-// Load base .env first, then override with .env.local if present
-dotenv.config();
-const envLocalPath = path.resolve(process.cwd(), '.env.local');
-const isLocalEnv = fs.existsSync(envLocalPath);
-if (isLocalEnv) {
-  dotenv.config({ path: envLocalPath, override: true });
+// Support explicit target flags (--cloud / --supabase vs --local)
+const args = process.argv.slice(2);
+const forceCloud = args.includes('--cloud') || args.includes('--supabase') || process.env.TARGET_ENV === 'cloud';
+const forceLocal = args.includes('--local') || process.env.TARGET_ENV === 'local';
+
+if (forceCloud) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env'), override: true });
+} else {
+  dotenv.config();
+  const envLocalPath = path.resolve(process.cwd(), '.env.local');
+  const isLocalEnv = fs.existsSync(envLocalPath);
+  if (isLocalEnv || forceLocal) {
+    dotenv.config({ path: envLocalPath, override: true });
+  }
 }
 
 const { PrismaClient } = await import('@prisma/client');
@@ -23,6 +31,7 @@ async function checkConnection() {
 
     const categoriesCount = await prisma.category.count();
     const productsCount = await prisma.product.count();
+    const variantsCount = await prisma.productVariant.count();
     const ordersCount = await prisma.order.count();
     const customersCount = await prisma.customer.count();
 
@@ -37,10 +46,11 @@ async function checkConnection() {
     console.log(`🐘 Engine: ${rawResult[0].pg_version.split(' on ')[0]}`);
     console.log(`🕒 Database Clock: ${rawResult[0].server_time.toISOString()}`);
     console.log('📊 Synchronized Table Records:');
-    console.log(`   - Customers:  ${customersCount}`);
-    console.log(`   - Categories: ${categoriesCount}`);
-    console.log(`   - Products:   ${productsCount}`);
-    console.log(`   - Orders:     ${ordersCount}`);
+    console.log(`   - Customers:       ${customersCount}`);
+    console.log(`   - Categories:      ${categoriesCount}`);
+    console.log(`   - Products:        ${productsCount}`);
+    console.log(`   - ProductVariants: ${variantsCount}`);
+    console.log(`   - Orders:          ${ordersCount}`);
     console.log('--------------------------------------------------');
   } catch (error) {
     console.error('❌ Connection Failed:', error.message);
@@ -51,4 +61,3 @@ async function checkConnection() {
 }
 
 checkConnection();
-
