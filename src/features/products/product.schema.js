@@ -243,6 +243,28 @@ export const updateProductSchema = {
         type: 'array',
         items: { type: 'string' }
       },
+      variants: {
+        type: 'array',
+        description: 'Color variants with dedicated stock and photo galleries',
+        items: {
+          type: 'object',
+          required: ['colorName'],
+          properties: {
+            id: { type: 'string' },
+            colorName: { type: 'string' },
+            colorCode: { type: 'string', description: 'Hex code e.g. #8B0000' },
+            stock: { type: 'integer', minimum: 0, default: 1 },
+            costPrice: { type: 'number', minimum: 0 },
+            sellingPrice: { type: 'number', minimum: 0 },
+            images: {
+              type: 'array',
+              items: { type: 'string' }
+            },
+            isDefault: { type: 'boolean', default: false },
+            status: { type: 'string' }
+          }
+        }
+      },
       description: { type: 'string' },
       tags: { type: 'string' },
       status: { type: 'string' }

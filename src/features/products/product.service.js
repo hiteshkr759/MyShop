@@ -363,7 +363,12 @@ export class ProductService {
 
   async updateProduct(id, updates) {
     const existing = await this.db.product.findFirst({
-      where: { id, deletedAt: null }
+      where: { id, deletedAt: null },
+      include: {
+        variants: {
+          where: { deletedAt: null }
+        }
+      }
     });
     if (!existing) return null;
 
@@ -392,22 +397,126 @@ export class ProductService {
       }
     }
 
-    // Do not pass raw variants into product.update
+    const incomingVariants = Array.isArray(updates.variants) ? updates.variants : null;
     delete data.variants;
 
-    const updated = await this.db.product.update({
-      where: { id },
-      data,
-      include: {
-        category: true,
-        variants: {
-          where: { deletedAt: null },
-          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
-        }
-      }
-    });
+    return this.db.$transaction(async (tx) => {
+      // 1. Update parent product fields
+      await tx.product.update({
+        where: { id },
+        data
+      });
 
-    return enrichProduct(updated);
+      // 2. Synchronize color variants if variants array was explicitly supplied
+      if (incomingVariants !== null) {
+        const existingVariants = existing.variants || [];
+        const existingById = new Map(existingVariants.map(v => [v.id, v]));
+        const keptVariantIds = new Set();
+
+        for (let i = 0; i < incomingVariants.length; i++) {
+          const v = incomingVariants[i];
+          const vImages = Array.isArray(v.images) ? v.images : [];
+          const vStock = v.stock !== undefined ? Number(v.stock) : 1;
+          const isDefault = v.isDefault !== undefined ? Boolean(v.isDefault) : (i === 0);
+
+          // Check if variant has a persistent ID already in DB
+          if (v.id && existingById.has(v.id)) {
+            keptVariantIds.add(v.id);
+            await tx.productVariant.update({
+              where: { id: v.id },
+              data: {
+                colorName: v.colorName,
+                colorCode: v.colorCode !== undefined ? v.colorCode : existingById.get(v.id).colorCode,
+                stock: vStock,
+                costPrice: v.costPrice !== undefined ? Number(v.costPrice) : existingById.get(v.id).costPrice,
+                sellingPrice: v.sellingPrice !== undefined ? Number(v.sellingPrice) : existingById.get(v.id).sellingPrice,
+                images: vImages,
+                isDefault,
+                status: v.status || 'active'
+              }
+            });
+          } else {
+            // Check if variant with this colorName already exists on this product
+            const existingByName = await tx.productVariant.findUnique({
+              where: {
+                productId_colorName: {
+                  productId: id,
+                  colorName: v.colorName
+                }
+              }
+            });
+
+            if (existingByName) {
+              keptVariantIds.add(existingByName.id);
+              await tx.productVariant.update({
+                where: { id: existingByName.id },
+                data: {
+                  colorCode: v.colorCode || existingByName.colorCode,
+                  stock: vStock,
+                  costPrice: v.costPrice !== undefined ? Number(v.costPrice) : existingByName.costPrice,
+                  sellingPrice: v.sellingPrice !== undefined ? Number(v.sellingPrice) : existingByName.sellingPrice,
+                  images: vImages.length > 0 ? vImages : existingByName.images,
+                  isDefault,
+                  status: 'active',
+                  deletedAt: null
+                }
+              });
+            } else {
+              const createdVar = await tx.productVariant.create({
+                data: {
+                  productId: id,
+                  colorName: v.colorName,
+                  colorCode: v.colorCode || null,
+                  stock: vStock,
+                  costPrice: v.costPrice !== undefined ? Number(v.costPrice) : null,
+                  sellingPrice: v.sellingPrice !== undefined ? Number(v.sellingPrice) : null,
+                  images: vImages,
+                  isDefault,
+                  status: 'active'
+                }
+              });
+              keptVariantIds.add(createdVar.id);
+            }
+          }
+        }
+
+        // Soft-archive any previously active variants removed by the user
+        for (const oldVar of existingVariants) {
+          if (!keptVariantIds.has(oldVar.id)) {
+            await tx.productVariant.update({
+              where: { id: oldVar.id },
+              data: {
+                status: 'archived',
+                deletedAt: new Date()
+              }
+            });
+          }
+        }
+
+        // Recalculate parent product total stock from remaining active variants
+        const allActiveVariants = await tx.productVariant.findMany({
+          where: { productId: id, deletedAt: null, status: 'active' }
+        });
+        const newTotalStock = allActiveVariants.reduce((sum, v) => sum + v.stock, 0);
+        await tx.product.update({
+          where: { id },
+          data: { stock: newTotalStock }
+        });
+      }
+
+      const fullUpdated = await tx.product.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          variants: {
+            where: { deletedAt: null },
+            orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+          }
+        }
+      });
+
+      return enrichProduct(fullUpdated);
+    });
   }
 
   /**
