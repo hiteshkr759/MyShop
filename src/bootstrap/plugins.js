@@ -2,7 +2,6 @@
 
 import path from 'path';
 import fs from 'fs';
-import os from 'os';
 import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import fastifySensible from '@fastify/sensible';
@@ -40,34 +39,17 @@ export async function initPlugins(app) {
     }
   });
 
-  // Resolve uploads directory safely (using os.tmpdir() on Vercel/serverless environments)
-  let uploadsDir = process.env.VERCEL
-    ? path.join(os.tmpdir(), 'uploads')
-    : path.resolve(process.cwd(), 'public', 'uploads');
-
-  try {
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-  } catch (err) {
-    // Fallback to os.tmpdir() on read-only serverless platforms
-    uploadsDir = path.join(os.tmpdir(), 'uploads');
-    try {
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-    } catch {
-      // Do not crash serverless cold start
-    }
+  // Ensure public uploads directory exists for image storage
+  const uploadsDir = path.resolve(process.cwd(), 'public', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
   // Static file serving for uploaded images at /uploads/
-  if (fs.existsSync(uploadsDir)) {
-    await app.register(fastifyStatic, {
-      root: uploadsDir,
-      prefix: '/uploads/'
-    });
-  }
+  await app.register(fastifyStatic, {
+    root: uploadsDir,
+    prefix: '/uploads/'
+  });
 
   // Initialize and decorate shared Prisma database client
   const db = initDatabase(app);

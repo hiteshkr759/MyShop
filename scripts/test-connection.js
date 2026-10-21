@@ -4,12 +4,20 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 
-// Load base .env first, then override with .env.local if present
-dotenv.config();
-const envLocalPath = path.resolve(process.cwd(), '.env.local');
-const isLocalEnv = fs.existsSync(envLocalPath);
-if (isLocalEnv) {
-  dotenv.config({ path: envLocalPath, override: true });
+// Support explicit target flags (--cloud / --supabase vs --local)
+const args = process.argv.slice(2);
+const forceCloud = args.includes('--cloud') || args.includes('--supabase') || process.env.TARGET_ENV === 'cloud';
+const forceLocal = args.includes('--local') || process.env.TARGET_ENV === 'local';
+
+if (forceCloud) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env'), override: true });
+} else {
+  dotenv.config();
+  const envLocalPath = path.resolve(process.cwd(), '.env.local');
+  const isLocalEnv = fs.existsSync(envLocalPath);
+  if (isLocalEnv || forceLocal) {
+    dotenv.config({ path: envLocalPath, override: true });
+  }
 }
 
 const { PrismaClient } = await import('@prisma/client');
@@ -51,4 +59,3 @@ async function checkConnection() {
 }
 
 checkConnection();
-
