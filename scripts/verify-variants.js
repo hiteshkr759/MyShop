@@ -14,10 +14,10 @@ async function verifyVariants() {
   await app.ready();
 
   try {
-    // 1. GET /api/v1/products (List products with variants)
+    // 1. GET /api/v1/products (List products with variants, request limit=25 to view all catalog items)
     const listRes = await app.inject({
       method: 'GET',
-      url: '/api/v1/products'
+      url: '/api/v1/products?limit=25'
     });
     console.log(`1. GET /products: Status ${listRes.statusCode}`);
     const listData = JSON.parse(listRes.payload);
@@ -25,7 +25,7 @@ async function verifyVariants() {
 
     const saree1 = listData.data.find(p => p.id === 'saree-1');
     if (!saree1) {
-      throw new Error("Could not find saree-1 in products list");
+      throw new Error('Could not find saree-1 in products list');
     }
     console.log(`   Saree: ${saree1.name}`);
     console.log(`   Total Stock: ${saree1.totalStock} (aggregated across variants)`);

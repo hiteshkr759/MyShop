@@ -25,54 +25,47 @@ const { PrismaClient } = await import('@prisma/client');
 const prisma = new PrismaClient();
 
 // ==========================================
-// TEST DATA DEFINITIONS
+// EXCLUSIVE SAREE CATEGORIES
 // ==========================================
 
 export const seedCategories = [
   {
     id: 'cat-saree-silk',
     name: 'Silk Sarees',
-    description: 'Pure Silk, Kanjeevaram, Banarasi Katan, Tussar, and Chanderi handlooms'
+    description: 'Pure Silk, Kanjeevaram, Banarasi Katan, Tussar, Chanderi, and Mysore Silk handlooms'
   },
   {
     id: 'cat-saree-cotton',
     name: 'Cotton Sarees',
-    description: 'Pure Cotton, Mulmul, Linen, Khadi, Jamdani handweaves'
+    description: 'Pure Mulmul Cotton, Bengal Jamdani, Linen, Khadi, and Chettinad handweaves'
   },
   {
     id: 'cat-saree-party',
-    name: 'Party Wear Sarees',
-    description: 'Organza, Georgette, Chiffon, Net, and Crepe designer sarees'
+    name: 'Party Wear & Designer Sarees',
+    description: 'Organza, Georgette, Chiffon, Net, and Sequined Crepe designer sarees'
   },
   {
     id: 'cat-saree-traditional',
-    name: 'Traditional Sarees',
-    description: 'Paithani, Bandhani, Patola, Sambalpuri, Kasavu heritage weaves'
+    name: 'Traditional & Heritage Sarees',
+    description: 'Yeola Paithani, Gujarati Bandhani, Patan Patola, Sambalpuri Ikat, and Kasavu heritage weaves'
   },
   {
-    id: 'cat-1',
-    name: 'Electronics',
-    description: 'Gadgets, devices, and accessories'
+    id: 'cat-saree-daily',
+    name: 'Daily & Office Wear Sarees',
+    description: 'Lightweight printed georgette, breathable linen cotton, and soft kota doria sarees'
   },
   {
-    id: 'cat-2',
-    name: 'Clothing',
-    description: 'Men, women, and kids apparel'
-  },
-  {
-    id: 'cat-3',
-    name: 'Home & Kitchen',
-    description: 'Appliances, decor, and cookware'
-  },
-  {
-    id: 'cat-4',
-    name: 'Books',
-    description: 'Fiction, non-fiction, and educational'
+    id: 'cat-saree-bridal',
+    name: 'Bridal & Festive Sarees',
+    description: 'Heavy bridal Banarasi, real gold zari Kanchipuram, and embroidered bridal silks'
   }
 ];
 
+// ==========================================
+// EXCLUSIVE SAREE PRODUCTS (+65% MARKUP: SP = CP * 1.65)
+// ==========================================
+
 export const seedProducts = [
-  // Sarees (+65% Markup Formula: SP = CP * 1.65)
   {
     id: 'saree-1',
     name: 'Banarasi Katan Silk Handloom Saree',
@@ -80,7 +73,7 @@ export const seedProducts = [
     costPrice: 5000,
     sellingPrice: 8250,
     price: 8250,
-    stock: 5, // Total stock across 3 color variants
+    stock: 6,
     fabric: 'Pure Katan Silk',
     weave: 'Banarasi Kadwa',
     color: 'Crimson Red & Antique Gold',
@@ -88,10 +81,11 @@ export const seedProducts = [
     imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
     ],
     description: 'Handwoven pure katan silk saree adorned with intricate floral zari jaal and regal pallu.',
-    tags: 'silk,banarasi,handloom,bridal,wedding',
+    tags: 'silk,banarasi,handloom,kadwa,wedding',
     status: 'active'
   },
   {
@@ -101,17 +95,18 @@ export const seedProducts = [
     costPrice: 8000,
     sellingPrice: 13200,
     price: 13200,
-    stock: 3, // Total stock across 2 color variants
+    stock: 5,
     fabric: 'Mulberry Silk',
     weave: 'Kanjeevaram Korvai',
     color: 'Peacock Blue & Magenta',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
     images: [
-      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
     ],
     description: 'Authentic Kanchipuram silk saree with contrasting korvai border and pure gold zari motifs.',
-    tags: 'silk,kanjeevaram,temple-border,bridal',
+    tags: 'silk,kanjeevaram,korvai,temple-border,bridal',
     status: 'active'
   },
   {
@@ -121,17 +116,18 @@ export const seedProducts = [
     costPrice: 1800,
     sellingPrice: 2970,
     price: 2970,
-    stock: 5,
+    stock: 7,
     fabric: 'Cotton Silk',
     weave: 'Chanderi Handloom',
     color: 'Mint Green & Silver',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
     images: [
-      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
     ],
     description: 'Lightweight and sheer Chanderi handloom saree featuring silver zari booti and soft drape.',
-    tags: 'cotton-silk,chanderi,handloom,summer-wear',
+    tags: 'cotton-silk,chanderi,handloom,summer-wear,booti',
     status: 'active'
   },
   {
@@ -141,106 +137,149 @@ export const seedProducts = [
     costPrice: 2400,
     sellingPrice: 3960,
     price: 3960,
-    stock: 3,
+    stock: 5,
     fabric: 'Pure Organza',
     weave: 'Embroidered',
     color: 'Pastel Lavender',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
     images: [
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
     ],
     description: 'Contemporary pastel organza saree featuring delicate floral thread embroidery and scalloped border.',
-    tags: 'organza,party-wear,pastel,designer',
+    tags: 'organza,party-wear,pastel,designer,embroidery',
     status: 'active'
   },
   {
     id: 'saree-5',
-    name: 'Paithani Pure Silk Heritage Saree',
+    name: 'Yeola Paithani Pure Silk Heritage Saree',
     categoryId: 'cat-saree-traditional',
     costPrice: 6500,
     sellingPrice: 10725,
     price: 10725,
-    stock: 1,
+    stock: 3,
     fabric: 'Pure Silk',
     weave: 'Yeola Paithani',
-    color: 'Emerald Green & Gold',
+    color: 'Parrot Green & Royal Purple',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
-    images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'],
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
     description: 'Authentic Maharashtrian Yeola Paithani saree with kaleidoscope peacock pallu and gold zari border.',
-    tags: 'silk,paithani,heritage,traditional,wedding',
+    tags: 'silk,paithani,heritage,traditional,peacock-pallu',
     status: 'active'
   },
   {
     id: 'saree-6',
-    name: 'Jamdani Handwoven Pure Cotton Saree',
+    name: 'Dhakai Jamdani Handwoven Pure Cotton Saree',
     categoryId: 'cat-saree-cotton',
     costPrice: 1500,
     sellingPrice: 2475,
     price: 2475,
-    stock: 4,
+    stock: 5,
     fabric: 'Fine Cotton',
     weave: 'Dhakai Jamdani',
-    color: 'Off-White & Red',
+    color: 'Off-White & Scarlet Red',
     blousePiece: true,
     imageUrl: 'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
-    images: ['https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'],
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
     description: 'Breathable Dhakai Jamdani cotton saree with geometric floral motifs hand-loomed with precision.',
-    tags: 'cotton,jamdani,handloom,bengal-weave',
+    tags: 'cotton,jamdani,handloom,bengal-weave,traditional',
     status: 'active'
   },
   {
-    id: 'prod-1',
-    name: 'Wireless Noise-Canceling Headphones',
-    categoryId: 'cat-1',
-    costPrice: 90.9,
-    sellingPrice: 149.99,
-    price: 149.99,
-    stock: 25,
-    description: 'High-fidelity audio with active noise cancellation.',
-    tags: 'audio,wireless,bluetooth',
+    id: 'saree-7',
+    name: 'Traditional Bandhani Pure Georgette Saree',
+    categoryId: 'cat-saree-traditional',
+    costPrice: 3200,
+    sellingPrice: 5280,
+    price: 5280,
+    stock: 4,
+    fabric: 'Pure Georgette',
+    weave: 'Traditional Bandhej',
+    color: 'Royal Blue & Marigold Yellow',
+    blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Exquisite Jaipuri hand-tied bandhani dots across pure georgette fabric with rich zari gota patti border.',
+    tags: 'georgette,bandhani,bandhej,gota-patti,rajasthani',
     status: 'active'
   },
   {
-    id: 'prod-2',
-    name: 'Ergonomic Mechanical Keyboard',
-    categoryId: 'cat-1',
-    costPrice: 54.54,
-    sellingPrice: 89.99,
-    price: 89.99,
-    stock: 40,
-    description: 'Compact mechanical keyboard with RGB backlighting.',
-    tags: 'keyboard,pc,gaming',
+    id: 'saree-8',
+    name: 'Tussar Silk Handloom Floral Saree',
+    categoryId: 'cat-saree-silk',
+    costPrice: 3800,
+    sellingPrice: 6270,
+    price: 6270,
+    stock: 3,
+    fabric: 'Wild Tussar Silk',
+    weave: 'Handloom Weave',
+    color: 'Natural Tussar Beige & Rust',
+    blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Textured wild tussar silk saree with earthy botanical prints and golden zari highlights.',
+    tags: 'tussar,silk,handloom,floral,earthy',
     status: 'active'
   },
   {
-    id: 'prod-3',
-    name: 'Classic Organic Cotton T-Shirt',
-    categoryId: 'cat-2',
-    costPrice: 15.15,
-    sellingPrice: 25.0,
-    price: 25.0,
-    stock: 100,
-    description: 'Comfortable, breathable 100% organic cotton t-shirt.',
-    tags: 'apparel,cotton,casual',
+    id: 'saree-9',
+    name: 'Heavy Bridal Banarasi Katan Silk Saree',
+    categoryId: 'cat-saree-bridal',
+    costPrice: 9500,
+    sellingPrice: 15675,
+    price: 15675,
+    stock: 3,
+    fabric: 'Pure Katan Silk',
+    weave: 'Banarasi Jangla',
+    color: 'Sindoor Red & Pure Gold Jangla',
+    blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Imperial bridal Banarasi masterpiece with all-over intricate jangla gold zari weaving and heavy royal pallu.',
+    tags: 'bridal,banarasi,katan-silk,wedding,jangla,gold-zari',
     status: 'active'
   },
   {
-    id: 'prod-4',
-    name: 'Stainless Steel Insulated Water Bottle (750ml)',
-    categoryId: 'cat-3',
-    costPrice: 12.12,
-    sellingPrice: 20.0,
-    price: 20.0,
-    stock: 60,
-    description: 'Keeps drinks cold for 24 hours or hot for 12 hours.',
-    tags: 'drinkware,kitchen,eco-friendly',
+    id: 'saree-10',
+    name: 'Printed Daily Wear Khadi Linen Saree',
+    categoryId: 'cat-saree-daily',
+    costPrice: 950,
+    sellingPrice: 1567.5,
+    price: 1567.5,
+    stock: 7,
+    fabric: 'Khadi Linen',
+    weave: 'Handloom Weave',
+    color: 'Indigo Blue & Geometric Print',
+    blousePiece: true,
+    imageUrl: 'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Soft, breathable pure khadi linen saree suited for office and daily casual elegance.',
+    tags: 'khadi,linen,daily-wear,office-wear,breathable',
     status: 'active'
   }
 ];
 
-// Color Variants with Dedicated Stock and Multiple Photos
+// ==========================================
+// SAREE COLOR VARIANTS WITH MULTI-PHOTO GALLERIES
+// ==========================================
+
 export const seedVariants = [
   // Saree 1 variants (Banarasi Katan Silk)
   {
@@ -261,7 +300,7 @@ export const seedVariants = [
     productId: 'saree-1',
     colorName: 'Royal Emerald Green',
     colorCode: '#046A38',
-    stock: 1,
+    stock: 2,
     images: [
       'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
@@ -280,6 +319,7 @@ export const seedVariants = [
     ],
     isDefault: false
   },
+
   // Saree 2 variants (Kanjeevaram Pure Zari Silk)
   {
     id: 'var-saree2-blue',
@@ -305,6 +345,19 @@ export const seedVariants = [
     ],
     isDefault: false
   },
+  {
+    id: 'var-saree2-gold',
+    productId: 'saree-2',
+    colorName: 'Temple Gold & Wine',
+    colorCode: '#B8860B',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+
   // Saree 3 variants (Chanderi Handloom)
   {
     id: 'var-saree3-mint',
@@ -314,7 +367,7 @@ export const seedVariants = [
     stock: 3,
     images: [
       'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
     ],
     isDefault: true
   },
@@ -325,10 +378,23 @@ export const seedVariants = [
     colorCode: '#FFE5B4',
     stock: 2,
     images: [
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
     ],
     isDefault: false
   },
+  {
+    id: 'var-saree3-sky',
+    productId: 'saree-3',
+    colorName: 'Sky Blue & Pearl',
+    colorCode: '#87CEEB',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+
   // Saree 4 variants (Floral Organza)
   {
     id: 'var-saree4-lavender',
@@ -347,13 +413,176 @@ export const seedVariants = [
     productId: 'saree-4',
     colorName: 'Blush Powder Pink',
     colorCode: '#FFB6C1',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+  {
+    id: 'var-saree4-champagne',
+    productId: 'saree-4',
+    colorName: 'Champagne Gold',
+    colorCode: '#F7E7CE',
+    stock: 1,
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+
+  // Saree 5 variants (Paithani)
+  {
+    id: 'var-saree5-green',
+    productId: 'saree-5',
+    colorName: 'Parrot Green & Royal Purple',
+    colorCode: '#50C878',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree5-red',
+    productId: 'saree-5',
+    colorName: 'Ruby Red & Peacock Pallu',
+    colorCode: '#9B111E',
     stock: 1,
     images: [
       'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
     ],
     isDefault: false
+  },
+
+  // Saree 6 variants (Dhakai Jamdani)
+  {
+    id: 'var-saree6-white',
+    productId: 'saree-6',
+    colorName: 'Off-White & Scarlet Red',
+    colorCode: '#FAF9F6',
+    stock: 3,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree6-black',
+    productId: 'saree-6',
+    colorName: 'Midnight Black & Silver Zari',
+    colorCode: '#1B1B1B',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+
+  // Saree 7 variants (Bandhani)
+  {
+    id: 'var-saree7-blue',
+    productId: 'saree-7',
+    colorName: 'Royal Blue & Marigold Yellow',
+    colorCode: '#4169E1',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree7-pink',
+    productId: 'saree-7',
+    colorName: 'Rani Pink & Orange Bandhej',
+    colorCode: '#E4007C',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+
+  // Saree 8 variants (Tussar Silk)
+  {
+    id: 'var-saree8-beige',
+    productId: 'saree-8',
+    colorName: 'Natural Tussar Beige & Rust',
+    colorCode: '#D2B48C',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree8-ochre',
+    productId: 'saree-8',
+    colorName: 'Mustard Ochre & Olive',
+    colorCode: '#C68642',
+    stock: 1,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+
+  // Saree 9 variants (Bridal Banarasi)
+  {
+    id: 'var-saree9-vermillion',
+    productId: 'saree-9',
+    colorName: 'Sindoor Red & Pure Gold Jangla',
+    colorCode: '#E34234',
+    stock: 2,
+    images: [
+      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree9-plum',
+    productId: 'saree-9',
+    colorName: 'Royal Plum & Antique Zari',
+    colorCode: '#4A0E2E',
+    stock: 1,
+    images: [
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
+  },
+
+  // Saree 10 variants (Daily Khadi Linen)
+  {
+    id: 'var-saree10-indigo',
+    productId: 'saree-10',
+    colorName: 'Indigo Blue & Geometric Print',
+    colorCode: '#4B0082',
+    stock: 4,
+    images: [
+      'https://images.unsplash.com/photo-1610030469668-93510cb67655?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: true
+  },
+  {
+    id: 'var-saree10-terracotta',
+    productId: 'saree-10',
+    colorName: 'Terracotta Earth & Beige',
+    colorCode: '#E2725B',
+    stock: 3,
+    images: [
+      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'
+    ],
+    isDefault: false
   }
 ];
+
+// ==========================================
+// SAREE CUSTOMERS & SAMPLE ORDERS
+// ==========================================
 
 export const seedCustomers = [
   {
@@ -486,18 +715,51 @@ async function seedDatabase() {
   const targetLabel = isLocalhost ? 'LOCAL POSTGRESQL' : 'SUPABASE CLOUD';
 
   console.log(`====================================================`);
-  console.log(`🚀 STARTING DATABASE SEEDING PROCESS`);
+  console.log(`🚀 STARTING SAREE-ONLY DATABASE SEEDING PROCESS`);
   console.log(`🌍 Target Environment: ${targetLabel}`);
   console.log(`🔗 Database URL Host: ${(process.env.DATABASE_URL || '').split('@')[1] || 'localhost'}`);
   console.log(`====================================================\n`);
 
   try {
-    // 1. Seed Categories
-    console.log(`📦 [1/5] Seeding ${seedCategories.length} Categories...`);
+    // 0. CLEANUP: Soft-archive non-saree legacy seed data under Zero-Deletion Policy
+    console.log(`🧹 [0/5] Archiving non-saree legacy seed items...`);
+    const archivedCategories = await prisma.category.updateMany({
+      where: {
+        OR: [
+          { id: { in: ['cat-1', 'cat-2', 'cat-3', 'cat-4'] } },
+          { name: { in: ['Electronics', 'Clothing', 'Home & Kitchen', 'Books'] } }
+        ]
+      },
+      data: { deletedAt: new Date() }
+    });
+    console.log(`   ✓ Soft-archived ${archivedCategories.count} non-saree categories`);
+
+    const archivedProducts = await prisma.product.updateMany({
+      where: {
+        OR: [
+          { id: { in: ['prod-1', 'prod-2', 'prod-3', 'prod-4'] } },
+          { name: { in: [
+            'Wireless Noise-Canceling Headphones',
+            'Ergonomic Mechanical Keyboard',
+            'Classic Organic Cotton T-Shirt',
+            'Stainless Steel Insulated Water Bottle (750ml)'
+          ] } }
+        ]
+      },
+      data: {
+        status: 'archived',
+        deletedAt: new Date()
+      }
+    });
+    console.log(`   ✓ Soft-archived ${archivedProducts.count} non-saree products`);
+
+    // 1. Seed Saree Categories
+    console.log(`\n📦 [1/5] Seeding ${seedCategories.length} Saree Categories...`);
     for (const cat of seedCategories) {
       const record = await prisma.category.upsert({
-        where: { name: cat.name },
+        where: { id: cat.id },
         update: {
+          name: cat.name,
           description: cat.description,
           deletedAt: null
         },
@@ -510,8 +772,8 @@ async function seedDatabase() {
       console.log(`   ✓ Category: ${record.name} (${record.id})`);
     }
 
-    // 2. Seed Products
-    console.log(`\n👗 [2/5] Seeding ${seedProducts.length} Products (Sarees + Catalog)...`);
+    // 2. Seed Saree Products
+    console.log(`\n👗 [2/5] Seeding ${seedProducts.length} Saree Products (+65% Markup)...`);
     for (const prod of seedProducts) {
       const record = await prisma.product.upsert({
         where: { id: prod.id },
@@ -530,7 +792,7 @@ async function seedDatabase() {
           imageUrl: prod.imageUrl || null,
           images: Array.isArray(prod.images) ? prod.images : (prod.imageUrl ? [prod.imageUrl] : []),
           tags: prod.tags || null,
-          status: prod.status || 'active',
+          status: 'active',
           deletedAt: null
         },
         create: {
@@ -549,15 +811,15 @@ async function seedDatabase() {
           imageUrl: prod.imageUrl || null,
           images: Array.isArray(prod.images) ? prod.images : (prod.imageUrl ? [prod.imageUrl] : []),
           tags: prod.tags || null,
-          status: prod.status || 'active',
+          status: 'active',
           deletedAt: null
         }
       });
-      console.log(`   ✓ Product: ${record.name} | CP: ₹${record.costPrice} | SP: ₹${record.sellingPrice} (+65%)`);
+      console.log(`   ✓ Saree: ${record.name} | CP: ₹${record.costPrice} | SP: ₹${record.sellingPrice} (+65%)`);
     }
 
-    // 3. Seed Color Variants with Multiple Photos
-    console.log(`\n🎨 [3/5] Seeding ${seedVariants.length} Color Variants & Photo Galleries...`);
+    // 3. Seed Color Variants with Multi-Photo Galleries
+    console.log(`\n🎨 [3/5] Seeding ${seedVariants.length} Saree Colorways & Photo Galleries...`);
     for (const v of seedVariants) {
       const variantRecord = await prisma.productVariant.upsert({
         where: {
@@ -588,8 +850,8 @@ async function seedDatabase() {
       console.log(`   ✓ Color: ${variantRecord.colorName} (${variantRecord.colorCode}) | Stock: ${variantRecord.stock} | Photos: ${variantRecord.images.length}`);
     }
 
-    // 4. Seed Customers
-    console.log(`\n👥 [4/5] Seeding ${seedCustomers.length} Customers...`);
+    // 4. Seed Saree Customers
+    console.log(`\n👥 [4/5] Seeding ${seedCustomers.length} Saree Customers...`);
     for (const cust of seedCustomers) {
       const record = await prisma.customer.upsert({
         where: { phoneNumber: cust.phoneNumber },
@@ -610,8 +872,8 @@ async function seedDatabase() {
       console.log(`   ✓ Customer: ${record.name} | Phone: ${record.phoneNumber} | Area: ${record.area}`);
     }
 
-    // 5. Seed Orders & Items
-    console.log(`\n🧾 [5/5] Seeding ${seedOrders.length} Orders & Order Items...`);
+    // 5. Seed Saree Orders & Items
+    console.log(`\n🧾 [5/5] Seeding ${seedOrders.length} Saree Orders & Item Lines...`);
     for (const ord of seedOrders) {
       const { items, ...orderData } = ord;
 
@@ -676,19 +938,23 @@ async function seedDatabase() {
         });
       }
 
-      console.log(`   ✓ Order ${orderRecord.id}: Customer: ${orderRecord.customerName} | Total: ₹${orderRecord.totalAmount} | Status: ${orderRecord.status}`);
+      console.log(`   ✓ Order ${orderRecord.id}: Customer: ${orderRecord.customerName} | Saree Total: ₹${orderRecord.totalAmount} | Status: ${orderRecord.status}`);
     }
 
-    // 6. Verification & Record Counts
+    // Active counts verification
+    const activeCategories = await prisma.category.count({ where: { deletedAt: null } });
+    const activeProducts = await prisma.product.count({ where: { deletedAt: null, status: 'active' } });
+    const activeVariants = await prisma.productVariant.count({ where: { deletedAt: null, status: 'active' } });
+
     console.log(`\n====================================================`);
-    console.log(`🎉 SEEDING COMPLETED SUCCESSFULLY!`);
-    console.log(`📊 Synchronized Table Counts in ${targetLabel}:`);
-    console.log(`   - Categories:      ${await prisma.category.count()}`);
-    console.log(`   - Products:        ${await prisma.product.count()}`);
-    console.log(`   - ProductVariants: ${await prisma.productVariant.count()}`);
-    console.log(`   - Customers:       ${await prisma.customer.count()}`);
-    console.log(`   - Orders:          ${await prisma.order.count()}`);
-    console.log(`   - OrderItems:      ${await prisma.orderItem.count()}`);
+    console.log(`🎉 SAREE SEEDING COMPLETED SUCCESSFULLY!`);
+    console.log(`📊 Active Saree Entities in ${targetLabel}:`);
+    console.log(`   - Active Saree Categories: ${activeCategories}`);
+    console.log(`   - Active Saree Products:   ${activeProducts}`);
+    console.log(`   - Active Colorways:        ${activeVariants}`);
+    console.log(`   - Customers:               ${await prisma.customer.count()}`);
+    console.log(`   - Orders:                  ${await prisma.order.count()}`);
+    console.log(`   - OrderItems:              ${await prisma.orderItem.count()}`);
     console.log(`====================================================\n`);
 
     process.exit(0);
